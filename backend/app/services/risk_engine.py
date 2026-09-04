@@ -3,6 +3,7 @@ from app.services.scoring import calculate_risk_score
 from app.core.policy import get_policy_decision
 from app.services.reasons import get_risk_reasons
 from app.core.risk_types import RiskCategory
+from app.schemas.analysis import AnalysisResponse
 
 from app.core.risk_categories import (
     DESTRUCTIVE_KEYWORDS,
@@ -117,7 +118,7 @@ def detect_findings(action: str, context: str):
     return findings
 
 
-def analyze_risk(action: str, context: str):
+def analyze_risk(action: str, context: str) -> AnalysisResponse:
     action = action.lower()
     context = context.lower()
 
@@ -148,10 +149,10 @@ def analyze_risk(action: str, context: str):
 
     decision, risk_level = get_policy_decision(score)
 
-    return {
-        "decision": decision,
-        "risk_score": score,
-        "risk_level": risk_level,
-        "reasons": reasons,
-        "scopes": scopes
-    }
+    return AnalysisResponse(
+        decision=decision,
+        risk_score=score,
+        risk_level=risk_level,
+        reasons=reasons,
+        scopes=scopes
+    )
