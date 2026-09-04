@@ -1,6 +1,8 @@
 import re
 from app.services.scoring import calculate_risk_score
 from app.core.policy import get_policy_decision
+from app.services.reasons import get_risk_reasons
+
 from app.core.risk_categories import (
     DESTRUCTIVE_KEYWORDS,
     PRIVILEGE_KEYWORDS,
@@ -141,11 +143,7 @@ def analyze_risk(action: str, context: str):
 
     score = calculate_risk_score(findings)
 
-    reasons = [
-        finding.reason
-        for finding in findings
-        if finding.category not in scopes
-    ]
+    reasons = get_risk_reasons(findings, scopes)
 
     decision, risk_level = get_policy_decision(score)
 

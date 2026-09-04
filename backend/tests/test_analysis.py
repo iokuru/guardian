@@ -417,3 +417,31 @@ def test_empty_findings_have_zero_score():
     from app.services.scoring import calculate_risk_score
 
     assert calculate_risk_score([]) == 0.0
+
+
+
+def test_complete_risk_pipeline():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete all customer records",
+            "context": "Production database"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data == {
+        "decision": "BLOCK",
+        "risk_score": 1.0,
+        "risk_level": "CRITICAL",
+        "reasons": [
+            "Destructive action",
+            "Production environment"
+        ],
+        "scopes": [
+            "CUSTOMER_DATA"
+        ]
+    }
