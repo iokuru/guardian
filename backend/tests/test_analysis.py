@@ -311,3 +311,47 @@ def test_action_without_scope_returns_empty_scope():
     data = response.json()
 
     assert data["scopes"] == []
+
+
+def test_destructive_action_creates_finding():
+    from app.services.risk_engine import detect_findings
+
+    findings = detect_findings(
+        "Delete all customer records",
+        "Development database"
+    )
+
+    assert len(findings) == 1
+    assert findings[0].category == "DESTRUCTIVE"
+    assert findings[0].score == 0.70
+    assert findings[0].reason == "Destructive action"
+
+
+def test_multiple_risk_findings_are_created():
+    from app.services.risk_engine import detect_findings
+
+    findings = detect_findings(
+        "Delete the database and retrieve the API key",
+        "Production database"
+    )
+
+    categories = [finding.category for finding in findings]
+
+    assert categories == [
+        "DESTRUCTIVE",
+        "CREDENTIAL_ACCESS",
+        "PRODUCTION"
+    ]
+
+
+def test_finding_scores_are_preserved():
+    from app.services.risk_engine import detect_findings
+
+    findings = detect_findings(
+        "Grant admin privileges to a user",
+        "Production system"
+    )
+
+    scores = [finding.score for finding in findings]
+
+    assert scores == [0.60, 0.25]

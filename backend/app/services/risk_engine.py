@@ -1,5 +1,5 @@
 import re
-
+from app.services.scoring import calculate_risk_score
 from app.core.policy import get_policy_decision
 from app.core.risk_categories import (
     DESTRUCTIVE_KEYWORDS,
@@ -61,6 +61,9 @@ def detect_scope(action: str):
 
 
 def detect_findings(action: str, context: str):
+    action = action.lower()
+    context = context.lower()
+
     findings = []
 
     if contains_keyword(action, DESTRUCTIVE_KEYWORDS):
@@ -136,8 +139,7 @@ def analyze_risk(action: str, context: str):
             )
         )
 
-    score = sum(finding.score for finding in findings)
-    score = min(score, 1.0)
+    score = calculate_risk_score(findings)
 
     reasons = [
         finding.reason
