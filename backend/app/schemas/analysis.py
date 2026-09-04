@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AnalysisRequest(BaseModel):
-    action: str
-    context: str
+    action: str = Field(min_length=1)
+    context: str = Field(min_length=1)
 
 
 class AnalysisResponse(BaseModel):
