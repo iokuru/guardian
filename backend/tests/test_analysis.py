@@ -294,3 +294,20 @@ def test_temporary_files_scope_is_detected():
     data = response.json()
 
     assert data["scopes"] == ["TEMPORARY_FILES"]
+
+
+
+def test_action_without_scope_returns_empty_scope():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Restart the application",
+            "context": "Development environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["scopes"] == []
