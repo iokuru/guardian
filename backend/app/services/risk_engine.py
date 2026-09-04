@@ -75,7 +75,8 @@ def detect_findings(action: str, context: str):
             RiskFinding(
                 category=RiskCategory.DESTRUCTIVE,
                 score=DESTRUCTIVE_SCORE,
-                reason="Destructive action"
+                reason="Destructive action",
+                source="ACTION"
             )
         )
 
@@ -84,7 +85,8 @@ def detect_findings(action: str, context: str):
             RiskFinding(
                 category=RiskCategory.PRIVILEGE_ESCALATION,
                 score=PRIVILEGE_SCORE,
-                reason="Privilege escalation"
+                reason="Privilege escalation",
+                source="ACTION"
             )
         )
 
@@ -93,7 +95,8 @@ def detect_findings(action: str, context: str):
             RiskFinding(
                 category=RiskCategory.CREDENTIAL_ACCESS,
                 score=CREDENTIAL_SCORE,
-                reason="Credential access"
+                reason="Credential access",
+                source="ACTION"
             )
         )
 
@@ -102,7 +105,8 @@ def detect_findings(action: str, context: str):
             RiskFinding(
                 category=RiskCategory.DATA_EXFILTRATION,
                 score=EXFILTRATION_SCORE,
-                reason="Data exfiltration"
+                reason="Data exfiltration",
+                source="ACTION"
             )
         )
 
@@ -111,7 +115,8 @@ def detect_findings(action: str, context: str):
             RiskFinding(
                 category=RiskCategory.PRODUCTION,
                 score=PRODUCTION_SCORE,
-                reason="Production environment"
+                reason="Production environment",
+                source="CONTEXT"
             )
         )
 
@@ -139,7 +144,8 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
             RiskFinding(
                 category=scope,
                 score=scope_scores[scope],
-                reason=f"{scope.value.replace('_', ' ').title()} scope"
+                reason=f"{scope.value.replace('_', ' ').title()} scope",
+                source="ACTION"
             )
         )
 
