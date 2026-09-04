@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
-from app.core.risk_types import RiskCategory
+from app.core.risk_types import FindingSource, RiskCategory
 
 
 class RiskFinding(BaseModel):
     category: RiskCategory
     score: float
     reason: str
-    source: str
+    source: FindingSource
