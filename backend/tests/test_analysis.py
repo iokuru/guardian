@@ -355,3 +355,65 @@ def test_finding_scores_are_preserved():
     scores = [finding.score for finding in findings]
 
     assert scores == [0.60, 0.25]
+
+
+
+def test_scoring_single_finding():
+    from app.schemas.risk import RiskFinding
+    from app.services.scoring import calculate_risk_score
+
+    findings = [
+        RiskFinding(
+            category="DESTRUCTIVE",
+            score=0.70,
+            reason="Destructive action"
+        )
+    ]
+
+    assert calculate_risk_score(findings) == 0.70
+
+
+def test_scoring_multiple_findings():
+    from app.schemas.risk import RiskFinding
+    from app.services.scoring import calculate_risk_score
+
+    findings = [
+        RiskFinding(
+            category="DESTRUCTIVE",
+            score=0.70,
+            reason="Destructive action"
+        ),
+        RiskFinding(
+            category="PRODUCTION",
+            score=0.25,
+            reason="Production environment"
+        )
+    ]
+
+    assert calculate_risk_score(findings) == 0.95
+
+
+def test_scoring_is_capped_at_one():
+    from app.schemas.risk import RiskFinding
+    from app.services.scoring import calculate_risk_score
+
+    findings = [
+        RiskFinding(
+            category="DESTRUCTIVE",
+            score=0.70,
+            reason="Destructive action"
+        ),
+        RiskFinding(
+            category="DATA_EXFILTRATION",
+            score=0.80,
+            reason="Data exfiltration"
+        )
+    ]
+
+    assert calculate_risk_score(findings) == 1.0
+
+
+def test_empty_findings_have_zero_score():
+    from app.services.scoring import calculate_risk_score
+
+    assert calculate_risk_score([]) == 0.0
