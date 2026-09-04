@@ -450,3 +450,38 @@ def test_complete_risk_pipeline():
             "CUSTOMER_DATA"
         ]
     }
+
+
+
+def test_risk_finding_rejects_negative_score():
+    from pydantic import ValidationError
+    from app.core.risk_types import FindingSource, RiskCategory
+    from app.schemas.risk import RiskFinding
+
+    try:
+        RiskFinding(
+            category=RiskCategory.DESTRUCTIVE,
+            score=-0.1,
+            reason="Destructive action",
+            source=FindingSource.ACTION
+        )
+        assert False
+    except ValidationError:
+        assert True
+
+
+def test_risk_finding_rejects_score_above_one():
+    from pydantic import ValidationError
+    from app.core.risk_types import FindingSource, RiskCategory
+    from app.schemas.risk import RiskFinding
+
+    try:
+        RiskFinding(
+            category=RiskCategory.DESTRUCTIVE,
+            score=1.1,
+            reason="Destructive action",
+            source=FindingSource.ACTION
+        )
+        assert False
+    except ValidationError:
+        assert True
