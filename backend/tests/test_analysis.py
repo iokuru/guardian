@@ -144,3 +144,89 @@ def test_empty_context_is_rejected():
     )
 
     assert response.status_code == 422
+
+
+def test_production_read_is_medium_risk():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Read customer information",
+            "context": "Production database"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "ALLOW"
+    assert data["risk_score"] == 0.25
+    assert data["risk_level"] == "MEDIUM"
+    assert data["reasons"] == ["Production environment"]
+
+
+def test_privilege_escalation_in_production_is_blocked():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Grant admin privileges to a user",
+            "context": "Production system"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "BLOCK"
+    assert data["risk_score"] == 0.85
+    assert data["risk_level"] == "CRITICAL"
+    assert data["reasons"] == [
+        "Privilege escalation",
+        "Production environment"
+    ]
+
+
+def test_credential_access_in_production_is_blocked():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Retrieve the API key",
+            "context": "Production environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "BLOCK"
+    assert data["risk_score"] == 0.85
+    assert data["risk_level"] == "CRITICAL"
+    assert data["reasons"] == [
+        "Credential access",
+        "Production environment"
+    ]
+
+
+def test_multiple_risks_are_combined():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete the database and retrieve the API key",
+            "context": "Production database"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "BLOCK"
+    assert data["risk_score"] == 1.0
+    assert data["risk_level"] == "CRITICAL"
+    assert data["reasons"] == [
+        "Destructive action",
+        "Credential access",
+        "Production environment"
+    ]
