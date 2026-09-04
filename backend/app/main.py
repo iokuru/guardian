@@ -1,14 +1,14 @@
 from fastapi import FastAPI
 
-app = FastAPI(
-    title="GUARDIAN",
-    description="AI powered risk assessment and action control system",
-    version="0.1.0"
-)
+from app.api.analysis import router as analysis_router
 
-@app.get("/")
-def root():
-    return {
-        "system": "GUARDIAN",
-        "status": "online"
-    }
+
+app = FastAPI(title="GUARDIAN")
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+app.include_router(analysis_router)
