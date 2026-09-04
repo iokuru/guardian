@@ -357,7 +357,7 @@ def test_finding_scores_are_preserved():
 
 
 def test_scoring_single_finding():
-    from app.core.risk_types import RiskCategory
+    from app.core.risk_types import FindingSource, RiskCategory
     from app.schemas.risk import RiskFinding
     from app.services.scoring import calculate_risk_score
 
@@ -366,7 +366,7 @@ def test_scoring_single_finding():
             category=RiskCategory.DESTRUCTIVE,
             score=0.70,
             reason="Destructive action",
-            source="ACTION"
+            source=FindingSource.ACTION
         )
     ]
 
@@ -374,7 +374,7 @@ def test_scoring_single_finding():
 
 
 def test_scoring_multiple_findings():
-    from app.core.risk_types import RiskCategory
+    from app.core.risk_types import FindingSource, RiskCategory
     from app.schemas.risk import RiskFinding
     from app.services.scoring import calculate_risk_score
 
@@ -383,13 +383,13 @@ def test_scoring_multiple_findings():
             category=RiskCategory.DESTRUCTIVE,
             score=0.70,
             reason="Destructive action",
-            source="ACTION"
+            source=FindingSource.ACTION
         ),
         RiskFinding(
             category=RiskCategory.PRODUCTION,
             score=0.25,
             reason="Production environment",
-            source="ACTION"
+            source=FindingSource.ACTION
         )
     ]
 
@@ -397,7 +397,7 @@ def test_scoring_multiple_findings():
 
 
 def test_scoring_is_capped_at_one():
-    from app.core.risk_types import RiskCategory
+    from app.core.risk_types import FindingSource, RiskCategory
     from app.schemas.risk import RiskFinding
     from app.services.scoring import calculate_risk_score
 
@@ -406,13 +406,13 @@ def test_scoring_is_capped_at_one():
             category=RiskCategory.DESTRUCTIVE,
             score=0.70,
             reason="Destructive action",
-            source="ACTION"
+            source=FindingSource.ACTION
         ),
         RiskFinding(
             category=RiskCategory.DATA_EXFILTRATION,
             score=0.80,
             reason="Data exfiltration",
-            source="ACTION"
+            source=FindingSource.ACTION
         )
     ]
 

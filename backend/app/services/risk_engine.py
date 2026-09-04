@@ -2,7 +2,7 @@ import re
 from app.services.scoring import calculate_risk_score
 from app.core.policy import get_policy_decision
 from app.services.reasons import get_risk_reasons
-from app.core.risk_types import RiskCategory
+from app.core.risk_types import FindingSource, RiskCategory
 from app.schemas.analysis import AnalysisResponse
 
 from app.core.risk_categories import (
@@ -76,7 +76,7 @@ def detect_findings(action: str, context: str):
                 category=RiskCategory.DESTRUCTIVE,
                 score=DESTRUCTIVE_SCORE,
                 reason="Destructive action",
-                source="ACTION"
+                source=FindingSource.ACTION
             )
         )
 
@@ -86,7 +86,7 @@ def detect_findings(action: str, context: str):
                 category=RiskCategory.PRIVILEGE_ESCALATION,
                 score=PRIVILEGE_SCORE,
                 reason="Privilege escalation",
-                source="ACTION"
+                source=FindingSource.ACTION
             )
         )
 
@@ -96,7 +96,7 @@ def detect_findings(action: str, context: str):
                 category=RiskCategory.CREDENTIAL_ACCESS,
                 score=CREDENTIAL_SCORE,
                 reason="Credential access",
-                source="ACTION"
+                source=FindingSource.ACTION
             )
         )
 
@@ -106,7 +106,7 @@ def detect_findings(action: str, context: str):
                 category=RiskCategory.DATA_EXFILTRATION,
                 score=EXFILTRATION_SCORE,
                 reason="Data exfiltration",
-                source="ACTION"
+                source=FindingSource.ACTION
             )
         )
 
@@ -116,7 +116,7 @@ def detect_findings(action: str, context: str):
                 category=RiskCategory.PRODUCTION,
                 score=PRODUCTION_SCORE,
                 reason="Production environment",
-                source="CONTEXT"
+                source=FindingSource.CONTEXT
             )
         )
 
@@ -145,7 +145,7 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
                 category=scope,
                 score=scope_scores[scope],
                 reason=f"{scope.value.replace('_', ' ').title()} scope",
-                source="ACTION"
+                source=FindingSource.SCOPE
             )
         )
 
