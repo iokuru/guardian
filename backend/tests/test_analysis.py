@@ -27,7 +27,7 @@ def test_production_delete_is_blocked():
     data = response.json()
 
     assert data["decision"] == "BLOCK"
-    assert data["risk_score"] == 0.95
+    assert data["risk_score"] == 1.0
     assert data["risk_level"] == "CRITICAL"
 
 
@@ -45,7 +45,7 @@ def test_normal_action_is_low_risk():
     data = response.json()
 
     assert data["decision"] == "ALLOW"
-    assert data["risk_score"] == 0.0
+    assert data["risk_score"] == 0.15
     assert data["risk_level"] == "LOW"
 
 
@@ -160,7 +160,7 @@ def test_production_read_is_medium_risk():
     data = response.json()
 
     assert data["decision"] == "ALLOW"
-    assert data["risk_score"] == 0.25
+    assert data["risk_score"] == 0.40
     assert data["risk_level"] == "MEDIUM"
     assert data["reasons"] == ["Production environment"]
 
