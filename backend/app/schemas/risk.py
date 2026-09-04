@@ -7,3 +7,4 @@ class RiskFinding(BaseModel):
     category: RiskCategory
     score: float
     reason: str
+    source: str
