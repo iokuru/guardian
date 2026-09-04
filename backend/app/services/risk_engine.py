@@ -1,3 +1,5 @@
+import re
+
 from app.core.risk_categories import (
     DESTRUCTIVE_KEYWORDS,
     PRIVILEGE_KEYWORDS,
@@ -7,6 +9,13 @@ from app.core.risk_categories import (
 )
 
 
+def contains_keyword(text: str, keywords: list[str]) -> bool:
+    return any(
+        re.search(r"\b" + re.escape(keyword) + r"\b", text)
+        for keyword in keywords
+    )
+
+
 def analyze_risk(action: str, context: str):
     action = action.lower()
     context = context.lower()
@@ -14,23 +23,23 @@ def analyze_risk(action: str, context: str):
     score = 0.0
     reasons = []
 
-    if any(word in action for word in DESTRUCTIVE_KEYWORDS):
+    if contains_keyword(action, DESTRUCTIVE_KEYWORDS):
         score += 0.70
         reasons.append("Destructive action")
 
-    if any(word in action for word in PRIVILEGE_KEYWORDS):
+    if contains_keyword(action, PRIVILEGE_KEYWORDS):
         score += 0.60
         reasons.append("Privilege escalation")
 
-    if any(word in action for word in CREDENTIAL_KEYWORDS):
+    if contains_keyword(action, CREDENTIAL_KEYWORDS):
         score += 0.60
         reasons.append("Credential access")
 
-    if any(word in action for word in EXFILTRATION_KEYWORDS):
+    if contains_keyword(action, EXFILTRATION_KEYWORDS):
         score += 0.80
         reasons.append("Data exfiltration")
 
-    if any(word in context for word in PRODUCTION_KEYWORDS):
+    if contains_keyword(context, PRODUCTION_KEYWORDS):
         score += 0.25
         reasons.append("Production environment")
 

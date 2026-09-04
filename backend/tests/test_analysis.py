@@ -101,3 +101,22 @@ def test_data_exfiltration_is_blocked():
     assert data["decision"] == "BLOCK"
     assert data["risk_score"] == 1.0
     assert data["risk_level"] == "CRITICAL"
+
+
+def test_keyword_inside_word_does_not_trigger():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Review the deletion policy",
+            "context": "Development environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "ALLOW"
+    assert data["risk_score"] == 0.0
+    assert data["risk_level"] == "LOW"
+    assert data["reasons"] == []
