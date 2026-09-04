@@ -485,3 +485,45 @@ def test_risk_finding_rejects_score_above_one():
         assert False
     except ValidationError:
         assert True
+
+
+
+
+def test_policy_low_boundary():
+    from app.core.decision_types import RiskDecision, RiskLevel
+    from app.core.policy import get_policy_decision
+
+    decision, level = get_policy_decision(0.19)
+
+    assert decision == RiskDecision.ALLOW
+    assert level == RiskLevel.LOW
+
+
+def test_policy_medium_boundary():
+    from app.core.decision_types import RiskDecision, RiskLevel
+    from app.core.policy import get_policy_decision
+
+    decision, level = get_policy_decision(0.20)
+
+    assert decision == RiskDecision.ALLOW
+    assert level == RiskLevel.MEDIUM
+
+
+def test_policy_high_boundary():
+    from app.core.decision_types import RiskDecision, RiskLevel
+    from app.core.policy import get_policy_decision
+
+    decision, level = get_policy_decision(0.50)
+
+    assert decision == RiskDecision.REVIEW
+    assert level == RiskLevel.HIGH
+
+
+def test_policy_critical_boundary():
+    from app.core.decision_types import RiskDecision, RiskLevel
+    from app.core.policy import get_policy_decision
+
+    decision, level = get_policy_decision(0.80)
+
+    assert decision == RiskDecision.BLOCK
+    assert level == RiskLevel.CRITICAL
