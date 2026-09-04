@@ -26,13 +26,7 @@ from app.core.risk_scope import (
     DATABASE_KEYWORDS,
     TEMPORARY_FILE_KEYWORDS,
 )
-from app.core.scope_scores import (
-    CUSTOMER_DATA_SCORE,
-    FINANCIAL_DATA_SCORE,
-    EMPLOYEE_DATA_SCORE,
-    DATABASE_SCORE,
-    TEMPORARY_FILES_SCORE,
-)
+from app.core.scope_scores import SCOPE_SCORES
 from app.schemas.risk import RiskFinding
 
 
@@ -128,19 +122,11 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
 
     scopes = detect_scope(action)
 
-    scope_scores = {
-        RiskCategory.CUSTOMER_DATA: CUSTOMER_DATA_SCORE,
-        RiskCategory.FINANCIAL_DATA: FINANCIAL_DATA_SCORE,
-        RiskCategory.EMPLOYEE_DATA: EMPLOYEE_DATA_SCORE,
-        RiskCategory.DATABASE: DATABASE_SCORE,
-        RiskCategory.TEMPORARY_FILES: TEMPORARY_FILES_SCORE,
-    }
-
     for scope in scopes:
         findings.append(
             RiskFinding(
                 category=scope,
-                score=scope_scores[scope],
+                score=SCOPE_SCORES[scope],
                 reason=f"{scope.value.replace('_', ' ').title()} scope",
                 source=FindingSource.SCOPE
             )
