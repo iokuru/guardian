@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-
+from app.core.decision_types import RiskDecision, RiskLevel
 from app.core.risk_types import RiskCategory
 
 
@@ -9,8 +9,8 @@ class AnalysisRequest(BaseModel):
 
 
 class AnalysisResponse(BaseModel):
-    decision: str
+    decision: RiskDecision
     risk_score: float
-    risk_level: str
+    risk_level: RiskLevel
     reasons: list[str]
     scopes: list[RiskCategory]
