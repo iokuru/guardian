@@ -124,9 +124,6 @@ def detect_findings(action: str, context: str):
 
 
 def analyze_risk(action: str, context: str) -> AnalysisResponse:
-    action = action.lower()
-    context = context.lower()
-
     findings = detect_findings(action, context)
 
     scopes = detect_scope(action)
