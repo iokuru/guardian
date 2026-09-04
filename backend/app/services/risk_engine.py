@@ -2,6 +2,7 @@ import re
 from app.services.scoring import calculate_risk_score
 from app.core.policy import get_policy_decision
 from app.services.reasons import get_risk_reasons
+from app.core.risk_types import RiskCategory
 
 from app.core.risk_categories import (
     DESTRUCTIVE_KEYWORDS,
@@ -45,19 +46,19 @@ def detect_scope(action: str):
     scopes = []
 
     if contains_keyword(action, CUSTOMER_DATA_KEYWORDS):
-        scopes.append("CUSTOMER_DATA")
+        scopes.append(RiskCategory.CUSTOMER_DATA)
 
     if contains_keyword(action, FINANCIAL_DATA_KEYWORDS):
-        scopes.append("FINANCIAL_DATA")
+        scopes.append(RiskCategory.FINANCIAL_DATA)
 
     if contains_keyword(action, EMPLOYEE_DATA_KEYWORDS):
-        scopes.append("EMPLOYEE_DATA")
+        scopes.append(RiskCategory.EMPLOYEE_DATA)
 
     if contains_keyword(action, DATABASE_KEYWORDS):
-        scopes.append("DATABASE")
+        scopes.append(RiskCategory.DATABASE)
 
     if contains_keyword(action, TEMPORARY_FILE_KEYWORDS):
-        scopes.append("TEMPORARY_FILES")
+        scopes.append(RiskCategory.TEMPORARY_FILES)
 
     return scopes
 
@@ -71,7 +72,7 @@ def detect_findings(action: str, context: str):
     if contains_keyword(action, DESTRUCTIVE_KEYWORDS):
         findings.append(
             RiskFinding(
-                category="DESTRUCTIVE",
+                category=RiskCategory.DESTRUCTIVE,
                 score=DESTRUCTIVE_SCORE,
                 reason="Destructive action"
             )
@@ -80,7 +81,7 @@ def detect_findings(action: str, context: str):
     if contains_keyword(action, PRIVILEGE_KEYWORDS):
         findings.append(
             RiskFinding(
-                category="PRIVILEGE_ESCALATION",
+                category=RiskCategory.PRIVILEGE_ESCALATION,
                 score=PRIVILEGE_SCORE,
                 reason="Privilege escalation"
             )
@@ -89,7 +90,7 @@ def detect_findings(action: str, context: str):
     if contains_keyword(action, CREDENTIAL_KEYWORDS):
         findings.append(
             RiskFinding(
-                category="CREDENTIAL_ACCESS",
+                category=RiskCategory.CREDENTIAL_ACCESS,
                 score=CREDENTIAL_SCORE,
                 reason="Credential access"
             )
@@ -98,7 +99,7 @@ def detect_findings(action: str, context: str):
     if contains_keyword(action, EXFILTRATION_KEYWORDS):
         findings.append(
             RiskFinding(
-                category="DATA_EXFILTRATION",
+                category=RiskCategory.DATA_EXFILTRATION,
                 score=EXFILTRATION_SCORE,
                 reason="Data exfiltration"
             )
@@ -107,7 +108,7 @@ def detect_findings(action: str, context: str):
     if contains_keyword(context, PRODUCTION_KEYWORDS):
         findings.append(
             RiskFinding(
-                category="PRODUCTION",
+                category=RiskCategory.PRODUCTION,
                 score=PRODUCTION_SCORE,
                 reason="Production environment"
             )
@@ -125,11 +126,11 @@ def analyze_risk(action: str, context: str):
     scopes = detect_scope(action)
 
     scope_scores = {
-        "CUSTOMER_DATA": CUSTOMER_DATA_SCORE,
-        "FINANCIAL_DATA": FINANCIAL_DATA_SCORE,
-        "EMPLOYEE_DATA": EMPLOYEE_DATA_SCORE,
-        "DATABASE": DATABASE_SCORE,
-        "TEMPORARY_FILES": TEMPORARY_FILES_SCORE,
+        RiskCategory.CUSTOMER_DATA: CUSTOMER_DATA_SCORE,
+        RiskCategory.FINANCIAL_DATA: FINANCIAL_DATA_SCORE,
+        RiskCategory.EMPLOYEE_DATA: EMPLOYEE_DATA_SCORE,
+        RiskCategory.DATABASE: DATABASE_SCORE,
+        RiskCategory.TEMPORARY_FILES: TEMPORARY_FILES_SCORE,
     }
 
     for scope in scopes:
@@ -137,7 +138,7 @@ def analyze_risk(action: str, context: str):
             RiskFinding(
                 category=scope,
                 score=scope_scores[scope],
-                reason=f"{scope.replace('_', ' ').title()} scope"
+                reason=f"{scope.value.replace('_', ' ').title()} scope"
             )
         )
 

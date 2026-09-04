@@ -359,12 +359,12 @@ def test_finding_scores_are_preserved():
 
 
 def test_scoring_single_finding():
-    from app.schemas.risk import RiskFinding
+    from app.schemas.risk import RiskCategory, RiskFinding
     from app.services.scoring import calculate_risk_score
 
     findings = [
         RiskFinding(
-            category="DESTRUCTIVE",
+            category=RiskCategory.DESTRUCTIVE,
             score=0.70,
             reason="Destructive action"
         )
@@ -374,17 +374,17 @@ def test_scoring_single_finding():
 
 
 def test_scoring_multiple_findings():
-    from app.schemas.risk import RiskFinding
+    from app.schemas.risk import RiskCategory, RiskFinding
     from app.services.scoring import calculate_risk_score
 
     findings = [
         RiskFinding(
-            category="DESTRUCTIVE",
+            category=RiskCategory.DESTRUCTIVE,
             score=0.70,
             reason="Destructive action"
         ),
         RiskFinding(
-            category="PRODUCTION",
+            category=RiskCategory.PRODUCTION,
             score=0.25,
             reason="Production environment"
         )
@@ -394,17 +394,17 @@ def test_scoring_multiple_findings():
 
 
 def test_scoring_is_capped_at_one():
-    from app.schemas.risk import RiskFinding
+    from app.schemas.risk import RiskFinding, RiskCategory
     from app.services.scoring import calculate_risk_score
 
     findings = [
         RiskFinding(
-            category="DESTRUCTIVE",
+            category=RiskCategory.DESTRUCTIVE,
             score=0.70,
             reason="Destructive action"
         ),
         RiskFinding(
-            category="DATA_EXFILTRATION",
+            category=RiskCategory.DATA_EXFILTRATION,
             score=0.80,
             reason="Data exfiltration"
         )
