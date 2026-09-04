@@ -1,4 +1,10 @@
-from app.core.rules import DESTRUCTIVE_KEYWORDS, PRODUCTION_KEYWORDS
+from app.core.risk_categories import (
+    DESTRUCTIVE_KEYWORDS,
+    PRIVILEGE_KEYWORDS,
+    CREDENTIAL_KEYWORDS,
+    EXFILTRATION_KEYWORDS,
+    PRODUCTION_KEYWORDS,
+)
 
 
 def analyze_risk(action: str, context: str):
@@ -11,6 +17,18 @@ def analyze_risk(action: str, context: str):
     if any(word in action for word in DESTRUCTIVE_KEYWORDS):
         score += 0.70
         reasons.append("Destructive action")
+
+    if any(word in action for word in PRIVILEGE_KEYWORDS):
+        score += 0.60
+        reasons.append("Privilege escalation")
+
+    if any(word in action for word in CREDENTIAL_KEYWORDS):
+        score += 0.60
+        reasons.append("Credential access")
+
+    if any(word in action for word in EXFILTRATION_KEYWORDS):
+        score += 0.80
+        reasons.append("Data exfiltration")
 
     if any(word in context for word in PRODUCTION_KEYWORDS):
         score += 0.25
