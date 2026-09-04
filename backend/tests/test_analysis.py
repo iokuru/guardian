@@ -230,3 +230,67 @@ def test_multiple_risks_are_combined():
         "Credential access",
         "Production environment"
     ]
+
+
+def test_customer_data_scope_is_detected():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete all customer records",
+            "context": "Production database"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["scopes"] == ["CUSTOMER_DATA"]
+
+
+def test_financial_data_scope_is_detected():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Export financial data",
+            "context": "Internal system"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["scopes"] == ["FINANCIAL_DATA"]
+
+
+def test_database_scope_is_detected():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete the database",
+            "context": "Development environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["scopes"] == ["DATABASE"]
+
+
+def test_temporary_files_scope_is_detected():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete temporary files",
+            "context": "Development environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["scopes"] == ["TEMPORARY_FILES"]
