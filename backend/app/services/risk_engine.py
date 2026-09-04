@@ -1,3 +1,6 @@
+from app.core.rules import DESTRUCTIVE_KEYWORDS, PRODUCTION_KEYWORDS
+
+
 def analyze_risk(action: str, context: str):
     action = action.lower()
     context = context.lower()
@@ -5,25 +8,11 @@ def analyze_risk(action: str, context: str):
     score = 0.0
     reasons = []
 
-    destructive_keywords = [
-        "delete",
-        "drop",
-        "destroy",
-        "wipe",
-        "truncate"
-    ]
-
-    production_keywords = [
-        "production",
-        "prod",
-        "live"
-    ]
-
-    if any(word in action for word in destructive_keywords):
+    if any(word in action for word in DESTRUCTIVE_KEYWORDS):
         score += 0.70
         reasons.append("Destructive action")
 
-    if any(word in context for word in production_keywords):
+    if any(word in context for word in PRODUCTION_KEYWORDS):
         score += 0.25
         reasons.append("Production environment")
 
