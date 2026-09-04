@@ -120,3 +120,27 @@ def test_keyword_inside_word_does_not_trigger():
     assert data["risk_score"] == 0.0
     assert data["risk_level"] == "LOW"
     assert data["reasons"] == []
+
+
+def test_empty_action_is_rejected():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "",
+            "context": "Production database"
+        }
+    )
+
+    assert response.status_code == 422
+
+
+def test_empty_context_is_rejected():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete all customer records",
+            "context": ""
+        }
+    )
+
+    assert response.status_code == 422
