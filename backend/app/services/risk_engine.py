@@ -1,5 +1,6 @@
 import re
 
+from app.core.policy import get_policy_decision
 from app.core.risk_categories import (
     DESTRUCTIVE_KEYWORDS,
     PRIVILEGE_KEYWORDS,
@@ -45,18 +46,7 @@ def analyze_risk(action: str, context: str):
 
     score = min(score, 1.0)
 
-    if score >= 0.80:
-        risk_level = "CRITICAL"
-        decision = "BLOCK"
-    elif score >= 0.50:
-        risk_level = "HIGH"
-        decision = "REVIEW"
-    elif score > 0:
-        risk_level = "MEDIUM"
-        decision = "ALLOW"
-    else:
-        risk_level = "LOW"
-        decision = "ALLOW"
+    decision, risk_level = get_policy_decision(score)
 
     return {
         "decision": decision,
