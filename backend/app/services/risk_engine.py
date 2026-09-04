@@ -15,6 +15,13 @@ from app.core.risk_scores import (
     EXFILTRATION_SCORE,
     PRODUCTION_SCORE,
 )
+from app.core.risk_scope import (
+    CUSTOMER_DATA_KEYWORDS,
+    FINANCIAL_DATA_KEYWORDS,
+    EMPLOYEE_DATA_KEYWORDS,
+    DATABASE_KEYWORDS,
+    TEMPORARY_FILE_KEYWORDS,
+)
 
 
 def contains_keyword(text: str, keywords: list[str]) -> bool:
@@ -22,6 +29,27 @@ def contains_keyword(text: str, keywords: list[str]) -> bool:
         re.search(r"\b" + re.escape(keyword) + r"\b", text)
         for keyword in keywords
     )
+
+
+def detect_scope(action: str):
+    scopes = []
+
+    if contains_keyword(action, CUSTOMER_DATA_KEYWORDS):
+        scopes.append("CUSTOMER_DATA")
+
+    if contains_keyword(action, FINANCIAL_DATA_KEYWORDS):
+        scopes.append("FINANCIAL_DATA")
+
+    if contains_keyword(action, EMPLOYEE_DATA_KEYWORDS):
+        scopes.append("EMPLOYEE_DATA")
+
+    if contains_keyword(action, DATABASE_KEYWORDS):
+        scopes.append("DATABASE")
+
+    if contains_keyword(action, TEMPORARY_FILE_KEYWORDS):
+        scopes.append("TEMPORARY_FILES")
+
+    return scopes
 
 
 def analyze_risk(action: str, context: str):
@@ -59,5 +87,6 @@ def analyze_risk(action: str, context: str):
         "decision": decision,
         "risk_score": score,
         "risk_level": risk_level,
-        "reasons": reasons
+        "reasons": reasons,
+        "scopes": detect_scope(action)
     }

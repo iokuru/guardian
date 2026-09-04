@@ -11,3 +11,4 @@ class AnalysisResponse(BaseModel):
     risk_score: float
     risk_level: str
     reasons: list[str]
+    scopes: list[str]
