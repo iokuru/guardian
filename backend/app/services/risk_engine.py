@@ -22,6 +22,13 @@ from app.core.risk_scope import (
     DATABASE_KEYWORDS,
     TEMPORARY_FILE_KEYWORDS,
 )
+from app.core.scope_scores import (
+    CUSTOMER_DATA_SCORE,
+    FINANCIAL_DATA_SCORE,
+    EMPLOYEE_DATA_SCORE,
+    DATABASE_SCORE,
+    TEMPORARY_FILES_SCORE,
+)
 
 
 def contains_keyword(text: str, keywords: list[str]) -> bool:
@@ -79,6 +86,23 @@ def analyze_risk(action: str, context: str):
         score += PRODUCTION_SCORE
         reasons.append("Production environment")
 
+    scopes = detect_scope(action)
+
+    if "CUSTOMER_DATA" in scopes:
+        score += CUSTOMER_DATA_SCORE
+
+    if "FINANCIAL_DATA" in scopes:
+        score += FINANCIAL_DATA_SCORE
+
+    if "EMPLOYEE_DATA" in scopes:
+        score += EMPLOYEE_DATA_SCORE
+
+    if "DATABASE" in scopes:
+        score += DATABASE_SCORE
+
+    if "TEMPORARY_FILES" in scopes:
+        score += TEMPORARY_FILES_SCORE
+
     score = min(score, 1.0)
 
     decision, risk_level = get_policy_decision(score)
@@ -88,5 +112,5 @@ def analyze_risk(action: str, context: str):
         "risk_score": score,
         "risk_level": risk_level,
         "reasons": reasons,
-        "scopes": detect_scope(action)
+        "scopes": scopes
     }
