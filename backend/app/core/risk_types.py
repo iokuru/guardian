@@ -13,3 +13,9 @@ class RiskCategory(str, Enum):
     EMPLOYEE_DATA = "EMPLOYEE_DATA"
     DATABASE = "DATABASE"
     TEMPORARY_FILES = "TEMPORARY_FILES"
+
+
+class FindingSource(str, Enum):
+    ACTION = "ACTION"
+    CONTEXT = "CONTEXT"
+    SCOPE = "SCOPE"
