@@ -296,7 +296,6 @@ def test_temporary_files_scope_is_detected():
     assert data["scopes"] == ["TEMPORARY_FILES"]
 
 
-
 def test_action_without_scope_returns_empty_scope():
     response = client.post(
         "/analyze",
@@ -357,16 +356,17 @@ def test_finding_scores_are_preserved():
     assert scores == [0.60, 0.25]
 
 
-
 def test_scoring_single_finding():
-    from app.schemas.risk import RiskCategory, RiskFinding
+    from app.core.risk_types import RiskCategory
+    from app.schemas.risk import RiskFinding
     from app.services.scoring import calculate_risk_score
 
     findings = [
         RiskFinding(
             category=RiskCategory.DESTRUCTIVE,
             score=0.70,
-            reason="Destructive action"
+            reason="Destructive action",
+            source="ACTION"
         )
     ]
 
@@ -374,19 +374,22 @@ def test_scoring_single_finding():
 
 
 def test_scoring_multiple_findings():
-    from app.schemas.risk import RiskCategory, RiskFinding
+    from app.core.risk_types import RiskCategory
+    from app.schemas.risk import RiskFinding
     from app.services.scoring import calculate_risk_score
 
     findings = [
         RiskFinding(
             category=RiskCategory.DESTRUCTIVE,
             score=0.70,
-            reason="Destructive action"
+            reason="Destructive action",
+            source="ACTION"
         ),
         RiskFinding(
             category=RiskCategory.PRODUCTION,
             score=0.25,
-            reason="Production environment"
+            reason="Production environment",
+            source="ACTION"
         )
     ]
 
@@ -394,19 +397,22 @@ def test_scoring_multiple_findings():
 
 
 def test_scoring_is_capped_at_one():
-    from app.schemas.risk import RiskFinding, RiskCategory
+    from app.core.risk_types import RiskCategory
+    from app.schemas.risk import RiskFinding
     from app.services.scoring import calculate_risk_score
 
     findings = [
         RiskFinding(
             category=RiskCategory.DESTRUCTIVE,
             score=0.70,
-            reason="Destructive action"
+            reason="Destructive action",
+            source="ACTION"
         ),
         RiskFinding(
             category=RiskCategory.DATA_EXFILTRATION,
             score=0.80,
-            reason="Data exfiltration"
+            reason="Data exfiltration",
+            source="ACTION"
         )
     ]
 
@@ -417,7 +423,6 @@ def test_empty_findings_have_zero_score():
     from app.services.scoring import calculate_risk_score
 
     assert calculate_risk_score([]) == 0.0
-
 
 
 def test_complete_risk_pipeline():
