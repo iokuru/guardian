@@ -782,3 +782,25 @@ def test_risk_engine_combines_action_context_and_scope():
     assert "DESTRUCTIVE" in categories
     assert "PRODUCTION" in categories
     assert "CUSTOMER_DATA" in categories
+
+
+def test_risk_engine_uses_semantic_detection():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Get rid of all client records",
+            "context": "Development environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    categories = {
+        finding["category"]
+        for finding in data["findings"]
+    }
+
+    assert "DESTRUCTIVE" in categories
+    assert data["risk_score"] >= 0.50
