@@ -50,6 +50,17 @@ def get_intent_embeddings(model):
     return _intent_embeddings
 
 
+def semantic_confidence(similarity: float) -> float:
+    if similarity < SEMANTIC_THRESHOLD:
+        return 0.0
+
+    return min(
+        (similarity - SEMANTIC_THRESHOLD)
+        / (1.0 - SEMANTIC_THRESHOLD),
+        1.0,
+    )
+
+
 def detect_semantic_findings(
     action: str,
     context: str,
@@ -74,11 +85,17 @@ def detect_semantic_findings(
         best_score = float(similarities.max())
 
         if best_score >= SEMANTIC_THRESHOLD:
+            confidence = semantic_confidence(best_score)
+
             findings.append(
                 RiskFinding(
                     category=category,
                     score=INTENT_SCORES[category.value],
-                    reason=f"Semantic {category.value.lower().replace('_', ' ')} detected",
+                    reason=(
+                        f"Semantic "
+                        f"{category.value.lower().replace('_', ' ')} detected "
+                        f"(similarity={best_score:.2f}, confidence={confidence:.2f})"
+                    ),
                     source=FindingSource.MODEL,
                 )
             )
