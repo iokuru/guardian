@@ -621,3 +621,30 @@ def test_privilege_variants_are_detected():
             finding.category == RiskCategory.PRIVILEGE_ESCALATION
             for finding in findings
         )
+
+
+
+def test_credential_variants_are_detected():
+    from app.core.risk_types import RiskCategory
+    from app.services.detector import detect_findings
+
+    actions = [
+        "Retrieve credentials",
+        "Read credentials from the system",
+        "Get credentials",
+        "Extract credentials",
+        "Retrieve the service account key",
+        "Read database credentials",
+        "Retrieve the authentication token",
+    ]
+
+    for action in actions:
+        findings = detect_findings(
+            action,
+            "Development environment"
+        )
+
+        assert any(
+            finding.category == RiskCategory.CREDENTIAL_ACCESS
+            for finding in findings
+        )
