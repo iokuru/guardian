@@ -15,7 +15,8 @@ from app.core.risk_types import FindingSource
 from app.schemas.risk import RiskFinding
 
 
-model = SentenceTransformer(SEMANTIC_MODEL_NAME)
+_model = None
+
 
 INTENT_SCORES = {
     "DESTRUCTIVE": DESTRUCTIVE_SCORE,
@@ -25,10 +26,21 @@ INTENT_SCORES = {
 }
 
 
+def get_model():
+    global _model
+
+    if _model is None:
+        _model = SentenceTransformer(SEMANTIC_MODEL_NAME)
+
+    return _model
+
+
 def detect_semantic_findings(
     action: str,
     context: str
 ) -> list[RiskFinding]:
+
+    model = get_model()
 
     action_embedding = model.encode(
         action,
