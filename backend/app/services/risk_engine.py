@@ -40,8 +40,17 @@ def detect_scope(action: str):
 def analyze_risk(action: str, context: str) -> AnalysisResponse:
     findings = detect_findings(action, context)
 
+    semantic_findings = detect_semantic_findings(action, context)
+
+    existing_categories = {
+        finding.category
+        for finding in findings
+    }
+
     findings.extend(
-        detect_semantic_findings(action, context)
+        finding
+        for finding in semantic_findings
+        if finding.category not in existing_categories
     )
 
     scopes = detect_scope(action)
