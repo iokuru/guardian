@@ -569,3 +569,29 @@ def test_detector_detects_production_context():
     assert findings[0].category == RiskCategory.PRODUCTION
     assert findings[0].score == 0.25
     assert findings[0].source == FindingSource.CONTEXT
+
+
+
+def test_destructive_variants_are_detected():
+    from app.core.risk_types import RiskCategory
+    from app.services.detector import detect_findings
+
+    actions = [
+        "Remove all customer records",
+        "Purge the database",
+        "Erase customer information",
+        "Clear the database",
+        "Reset the production data",
+        "Overwrite the customer records",
+    ]
+
+    for action in actions:
+        findings = detect_findings(
+            action,
+            "Development environment"
+        )
+
+        assert any(
+            finding.category == RiskCategory.DESTRUCTIVE
+            for finding in findings
+        )
