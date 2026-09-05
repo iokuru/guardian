@@ -804,3 +804,26 @@ def test_risk_engine_uses_semantic_detection():
 
     assert "DESTRUCTIVE" in categories
     assert data["risk_score"] >= 0.50
+
+
+def test_risk_engine_does_not_double_count_semantic_category():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete all customer records",
+            "context": "Development environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    destructive_findings = [
+        finding
+        for finding in data["findings"]
+        if finding["category"] == "DESTRUCTIVE"
+    ]
+
+    assert len(destructive_findings) == 1
+    assert destructive_findings[0]["source"] == "ACTION"
