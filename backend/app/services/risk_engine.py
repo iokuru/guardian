@@ -38,6 +38,28 @@ def detect_scope(action: str):
 
 
 def analyze_risk(action: str, context: str) -> AnalysisResponse:
+    findings, scopes = collect_findings(action, context)
+
+    score = calculate_risk_score(findings)
+
+    reasons = get_risk_reasons(findings, scopes)
+
+    decision, risk_level = get_policy_decision(score)
+
+    return AnalysisResponse(
+        decision=decision,
+        risk_score=score,
+        risk_level=risk_level,
+        reasons=reasons,
+        scopes=scopes,
+        findings=findings,
+    )
+
+
+def collect_findings(action: str, context: str) -> tuple[
+    list[RiskFinding],
+    list[RiskCategory]
+]:
     findings = detect_findings(action, context)
 
     semantic_findings = detect_semantic_findings(action, context)
@@ -61,21 +83,8 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
                 category=scope,
                 score=SCOPE_SCORES[scope],
                 reason=f"{scope.value.replace('_', ' ').title()} scope",
-                source=FindingSource.SCOPE,
+                source=FindingSource.SCOPE
             )
         )
 
-    score = calculate_risk_score(findings)
-
-    reasons = get_risk_reasons(findings, scopes)
-
-    decision, risk_level = get_policy_decision(score)
-
-    return AnalysisResponse(
-        decision=decision,
-        risk_score=score,
-        risk_level=risk_level,
-        reasons=reasons,
-        scopes=scopes,
-        findings=findings,
-    )
+    return findings, scopes
