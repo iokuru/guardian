@@ -755,3 +755,30 @@ def test_semantic_risk_flows_through_analysis():
         "semantic destructive" in reason.lower()
         for reason in data["reasons"]
     )
+
+
+def test_risk_engine_combines_action_context_and_scope():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete all customer records",
+            "context": "Production database"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "BLOCK"
+    assert data["risk_level"] == "CRITICAL"
+    assert data["risk_score"] == 1.0
+
+    categories = {
+        finding["category"]
+        for finding in data["findings"]
+    }
+
+    assert "DESTRUCTIVE" in categories
+    assert "PRODUCTION" in categories
+    assert "CUSTOMER_DATA" in categories
