@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
+
 from app.core.decision_types import RiskDecision, RiskLevel
 from app.core.risk_types import RiskCategory
 from app.schemas.risk import RiskFinding
@@ -16,3 +19,14 @@ class AnalysisResponse(BaseModel):
     reasons: list[str]
     scopes: list[RiskCategory]
     findings: list[RiskFinding]
+
+
+class AnalysisRecord(BaseModel):
+    id: int
+    action: str
+    context: str
+    decision: RiskDecision
+    risk_score: float
+    risk_level: RiskLevel
+    created_at: datetime
+    findings: list[RiskFinding] = Field(default_factory=list)

@@ -3,7 +3,26 @@ from sqlalchemy.orm import Session
 from app.models.analysis import Analysis
 from app.models.finding import Finding
 from app.schemas.analysis import AnalysisResponse
+from sqlalchemy import select
 
+
+def get_analyses(
+    db: Session,
+    limit: int = 50,
+) -> list[Analysis]:
+    return list(
+        db.scalars(
+            select(Analysis)
+            .order_by(Analysis.created_at.desc())
+            .limit(limit)
+        )
+    )
+
+def get_analysis(
+    db: Session,
+    analysis_id: int,
+) -> Analysis | None:
+    return db.get(Analysis, analysis_id)
 
 def create_analysis(
     db: Session,
