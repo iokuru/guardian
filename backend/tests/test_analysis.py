@@ -903,3 +903,62 @@ def test_collect_findings_includes_semantic_detection():
     assert len(destructive_findings) == 1
     assert destructive_findings[0].source == FindingSource.MODEL
     assert scopes == []
+
+
+
+def test_list_analyses_returns_saved_analysis():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete all customer records",
+            "context": "Production database",
+        },
+    )
+
+    assert response.status_code == 200
+
+    response = client.get("/analyses")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) >= 1
+    assert data[0]["action"] == "Delete all customer records"
+    assert data[0]["decision"] == "BLOCK"
+    assert "findings" in data[0]
+
+
+def test_get_analysis_returns_saved_analysis():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete customer records",
+            "context": "Production database",
+        },
+    )
+
+    assert response.status_code == 200
+
+    analyses = client.get("/analyses").json()
+    analysis_id = analyses[0]["id"]
+
+    response = client.get(f"/analyses/{analysis_id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == analysis_id
+    assert data["action"] == "Delete customer records"
+    assert data["decision"] == "BLOCK"
+    assert "findings" in data
+
+
+def test_get_missing_analysis_returns_404():
+    response = client.get("/analyses/999999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Analysis not found"
+    }
