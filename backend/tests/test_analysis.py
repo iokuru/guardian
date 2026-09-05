@@ -438,18 +438,32 @@ def test_complete_risk_pipeline():
 
     data = response.json()
 
-    assert data == {
-        "decision": "BLOCK",
-        "risk_score": 1.0,
-        "risk_level": "CRITICAL",
-        "reasons": [
-            "Destructive action",
-            "Production environment"
-        ],
-        "scopes": [
-            "CUSTOMER_DATA"
-        ]
+    assert data["decision"] == "BLOCK"
+    assert data["risk_score"] == 1.0
+    assert data["risk_level"] == "CRITICAL"
+    assert data["reasons"] == [
+        "Destructive action",
+        "Production environment"
+    ]
+    assert data["scopes"] == [
+        "CUSTOMER_DATA"
+    ]
+    assert len(data["findings"]) == 3
+    assert data["findings"][0] == {
+        "category": "DESTRUCTIVE",
+        "score": 0.7,
+        "reason": "Destructive action",
+        "source": "ACTION"
     }
+    assert data["findings"][1] == {
+        "category": "PRODUCTION",
+        "score": 0.25,
+        "reason": "Production environment",
+        "source": "CONTEXT"
+    }
+    assert data["findings"][2]["category"] == "CUSTOMER_DATA"
+    assert data["findings"][2]["score"] == 0.15
+    assert data["findings"][2]["source"] == "SCOPE"
 
 
 
