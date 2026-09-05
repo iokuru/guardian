@@ -719,3 +719,25 @@ def test_semantic_detector_interface_returns_findings_list():
         finding.category == RiskCategory.DESTRUCTIVE
         for finding in findings
     )
+
+
+def test_semantic_risk_flows_through_analysis():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Get rid of all client records",
+            "context": "Development environment"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "REVIEW"
+    assert data["risk_level"] == "HIGH"
+    assert data["risk_score"] >= 0.50
+    assert any(
+        "semantic destructive" in reason.lower()
+        for reason in data["reasons"]
+    )
