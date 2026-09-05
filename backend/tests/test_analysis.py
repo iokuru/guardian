@@ -827,3 +827,46 @@ def test_risk_engine_does_not_double_count_semantic_category():
 
     assert len(destructive_findings) == 1
     assert destructive_findings[0]["source"] == "ACTION"
+
+
+def test_collect_findings_returns_findings_and_scopes():
+    from app.services.risk_engine import collect_findings
+    from app.core.risk_types import RiskCategory
+
+    findings, scopes = collect_findings(
+        "Delete all customer records",
+        "Production database"
+    )
+
+    assert isinstance(findings, list)
+    assert isinstance(scopes, list)
+
+    assert RiskCategory.DESTRUCTIVE in {
+        finding.category for finding in findings
+    }
+
+    assert RiskCategory.PRODUCTION in {
+        finding.category for finding in findings
+    }
+
+    assert RiskCategory.CUSTOMER_DATA in scopes
+
+
+def test_collect_findings_includes_semantic_detection():
+    from app.services.risk_engine import collect_findings
+    from app.core.risk_types import RiskCategory, FindingSource
+
+    findings, scopes = collect_findings(
+        "Get rid of all client records",
+        "Development environment"
+    )
+
+    destructive_findings = [
+        finding
+        for finding in findings
+        if finding.category == RiskCategory.DESTRUCTIVE
+    ]
+
+    assert len(destructive_findings) == 1
+    assert destructive_findings[0].source == FindingSource.MODEL
+    assert scopes == []
