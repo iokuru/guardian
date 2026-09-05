@@ -1,9 +1,13 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.database import Base
+
+if TYPE_CHECKING:
+    from app.models.analysis import Analysis
 
 
 class Finding(Base):
@@ -45,4 +49,8 @@ class Finding(Base):
         DateTime,
         default=datetime.utcnow,
         nullable=False,
+    )
+
+    analysis: Mapped["Analysis"] = relationship(
+        back_populates="findings",
     )
