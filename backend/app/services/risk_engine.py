@@ -1,4 +1,5 @@
 from app.core.policy import get_policy_decision
+from app.services.semantic_detector import detect_semantic_findings
 from app.core.risk_scope import (
     CUSTOMER_DATA_KEYWORDS,
     DATABASE_KEYWORDS,
@@ -38,6 +39,10 @@ def detect_scope(action: str):
 
 def analyze_risk(action: str, context: str) -> AnalysisResponse:
     findings = detect_findings(action, context)
+
+    findings.extend(
+        detect_semantic_findings(action, context)
+    )
 
     scopes = detect_scope(action)
 
