@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.models.dependencies import get_db
@@ -31,7 +31,7 @@ def analyze_endpoint(
     response_model=list[AnalysisRecord],
 )
 def list_analyses_endpoint(
-    limit: int = 50,
+    limit: int = Query(default=50, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
     return list_analyses(db, limit)

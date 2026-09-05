@@ -962,3 +962,13 @@ def test_get_missing_analysis_returns_404():
     assert response.json() == {
         "detail": "Analysis not found"
     }
+
+
+def test_list_analyses_rejects_invalid_limit():
+    response = client.get("/analyses?limit=0")
+
+    assert response.status_code == 422
+
+    response = client.get("/analyses?limit=101")
+
+    assert response.status_code == 422
