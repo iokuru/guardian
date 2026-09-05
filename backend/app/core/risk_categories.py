@@ -17,7 +17,14 @@ PRIVILEGE_KEYWORDS = [
     "grant access",
     "root access",
     "administrator",
-    "admin privileges"
+    "admin privileges",
+    "make admin",
+    "make user admin",
+    "elevate privileges",
+    "escalate privileges",
+    "assign admin role",
+    "grant root",
+    "sudo access",
 ]
 
 CREDENTIAL_KEYWORDS = [
