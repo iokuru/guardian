@@ -19,3 +19,4 @@ class FindingSource(str, Enum):
     ACTION = "ACTION"
     CONTEXT = "CONTEXT"
     SCOPE = "SCOPE"
+    MODEL = "MODEL"
