@@ -707,6 +707,7 @@ def test_detector_does_not_detect_unseen_exfiltration_phrase():
 
 def test_semantic_detector_interface_returns_findings_list():
     from app.services.semantic_detector import detect_semantic_findings
+    from app.core.risk_types import RiskCategory
 
     findings = detect_semantic_findings(
         "Get rid of all client records",
@@ -714,4 +715,7 @@ def test_semantic_detector_interface_returns_findings_list():
     )
 
     assert isinstance(findings, list)
-    assert findings == []
+    assert any(
+        finding.category == RiskCategory.DESTRUCTIVE
+        for finding in findings
+    )
