@@ -77,4 +77,5 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
         risk_level=risk_level,
         reasons=reasons,
         scopes=scopes,
+        findings=findings,
     )
