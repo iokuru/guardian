@@ -676,3 +676,29 @@ def test_exfiltration_variants_are_detected():
             finding.category == RiskCategory.DATA_EXFILTRATION
             for finding in findings
         )
+
+
+
+def test_detector_does_not_assume_synonyms():
+    from app.services.detector import detect_findings
+
+    findings = detect_findings(
+        "Get rid of all client records",
+        "Development environment"
+    )
+
+    assert findings == []
+
+
+def test_detector_does_not_detect_unseen_exfiltration_phrase():
+    from app.services.detector import detect_findings
+
+    findings = detect_findings(
+        "Move client records outside the organization",
+        "Production environment"
+    )
+
+    assert not any(
+        finding.category.value == "DATA_EXFILTRATION"
+        for finding in findings
+    )
