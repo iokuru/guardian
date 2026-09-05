@@ -3,7 +3,13 @@ DESTRUCTIVE_KEYWORDS = [
     "drop",
     "destroy",
     "wipe",
-    "truncate"
+    "truncate",
+    "remove",
+    "purge",
+    "erase",
+    "clear",
+    "reset",
+    "overwrite",
 ]
 
 PRIVILEGE_KEYWORDS = [
