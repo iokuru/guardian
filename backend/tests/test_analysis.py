@@ -702,3 +702,16 @@ def test_detector_does_not_detect_unseen_exfiltration_phrase():
         finding.category.value == "DATA_EXFILTRATION"
         for finding in findings
     )
+
+
+
+def test_semantic_detector_interface_returns_findings_list():
+    from app.services.semantic_detector import detect_semantic_findings
+
+    findings = detect_semantic_findings(
+        "Get rid of all client records",
+        "Development environment"
+    )
+
+    assert isinstance(findings, list)
+    assert findings == []
