@@ -32,7 +32,15 @@ CREDENTIAL_KEYWORDS = [
     "api key",
     "secret key",
     "access token",
-    "private key"
+    "private key",
+    "credentials",
+    "retrieve credentials",
+    "read credentials",
+    "get credentials",
+    "extract credentials",
+    "service account key",
+    "database credentials",
+    "authentication token",
 ]
 
 EXFILTRATION_KEYWORDS = [
