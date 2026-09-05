@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
-
 from sqlalchemy.orm import Session
 
 from app.models.dependencies import get_db
-from app.schemas.analysis import AnalysisRequest, AnalysisResponse
-from app.services.analysis_service import analyze
-
+from app.schemas.analysis import (
+    AnalysisRecord,
+    AnalysisRequest,
+    AnalysisResponse,
+)
 from app.services.analysis_service import (
     analyze,
     get_analysis_by_id,
     list_analyses,
 )
-
 router = APIRouter()
 
 
@@ -26,14 +26,20 @@ def analyze_endpoint(
         db,
     )
 
-@router.get("/analyses")
+@router.get(
+    "/analyses",
+    response_model=list[AnalysisRecord],
+)
 def list_analyses_endpoint(
     limit: int = 50,
     db: Session = Depends(get_db),
 ):
     return list_analyses(db, limit)
 
-@router.get("/analyses/{analysis_id}")
+@router.get(
+    "/analyses/{analysis_id}",
+    response_model=AnalysisRecord,
+)
 def get_analysis_endpoint(
     analysis_id: int,
     db: Session = Depends(get_db),
