@@ -102,3 +102,5 @@ def test_semantic_similarity_negative_examples():
             f"NEGATIVE {category.value}: "
             f"{action} -> {best_score:.4f}"
         )
+
+        assert best_score < 0.75
