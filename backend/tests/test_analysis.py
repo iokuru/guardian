@@ -527,3 +527,45 @@ def test_policy_critical_boundary():
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
+
+
+
+def test_detector_returns_no_findings_for_safe_action():
+    from app.services.detector import detect_findings
+
+    findings = detect_findings(
+        "Restart the application",
+        "Development environment"
+    )
+
+    assert findings == []
+
+
+def test_detector_detects_destructive_action():
+    from app.core.risk_types import FindingSource, RiskCategory
+    from app.services.detector import detect_findings
+
+    findings = detect_findings(
+        "Delete all customer records",
+        "Development environment"
+    )
+
+    assert len(findings) == 1
+    assert findings[0].category == RiskCategory.DESTRUCTIVE
+    assert findings[0].score == 0.70
+    assert findings[0].source == FindingSource.ACTION
+
+
+def test_detector_detects_production_context():
+    from app.core.risk_types import FindingSource, RiskCategory
+    from app.services.detector import detect_findings
+
+    findings = detect_findings(
+        "Read customer information",
+        "Production database"
+    )
+
+    assert len(findings) == 1
+    assert findings[0].category == RiskCategory.PRODUCTION
+    assert findings[0].score == 0.25
+    assert findings[0].source == FindingSource.CONTEXT
