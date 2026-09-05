@@ -595,3 +595,29 @@ def test_destructive_variants_are_detected():
             finding.category == RiskCategory.DESTRUCTIVE
             for finding in findings
         )
+
+
+
+def test_privilege_variants_are_detected():
+    from app.core.risk_types import RiskCategory
+    from app.services.detector import detect_findings
+
+    actions = [
+        "Make user admin",
+        "Elevate privileges for the account",
+        "Escalate privileges",
+        "Assign admin role to the user",
+        "Grant root access",
+        "Enable sudo access",
+    ]
+
+    for action in actions:
+        findings = detect_findings(
+            action,
+            "Development environment"
+        )
+
+        assert any(
+            finding.category == RiskCategory.PRIVILEGE_ESCALATION
+            for finding in findings
+        )
