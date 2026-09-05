@@ -10,6 +10,9 @@ SEMANTIC_INTENTS = {
         "purge existing records",
         "remove all customer records",
         "delete all records from a database",
+        "get rid of records",
+        "remove all client records",
+        "get rid of stored data",
     ],
     RiskCategory.PRIVILEGE_ESCALATION: [
         "give a user administrator privileges",
@@ -34,5 +37,8 @@ SEMANTIC_INTENTS = {
         "move a database outside the trusted environment",
         "send customer records to an external destination",
         "transfer sensitive information outside the organization",
+        "move customer information outside the organization",
+        "send customer information outside the organization",
+        "move sensitive data to an external destination",
     ],
 }
