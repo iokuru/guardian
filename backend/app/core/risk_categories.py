@@ -45,16 +45,20 @@ CREDENTIAL_KEYWORDS = [
 
 EXFILTRATION_KEYWORDS = [
     "send database",
+    "send the database",
     "export customer data",
     "upload customer data",
     "copy customer data",
     "download customer database",
+    "download customer data",
     "send customer data",
     "upload database",
+    "upload the database",
     "export database",
-    "download customer data",
+    "export the database",
     "transfer customer data",
     "transfer database",
+    "transfer the database",
     "exfiltrate data",
 ]
 

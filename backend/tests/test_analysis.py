@@ -648,3 +648,31 @@ def test_credential_variants_are_detected():
             finding.category == RiskCategory.CREDENTIAL_ACCESS
             for finding in findings
         )
+
+
+
+
+def test_exfiltration_variants_are_detected():
+    from app.core.risk_types import RiskCategory
+    from app.services.detector import detect_findings
+
+    actions = [
+        "Send customer data",
+        "Upload the database",
+        "Export the database",
+        "Download customer data",
+        "Transfer customer data",
+        "Transfer the database",
+        "Exfiltrate data",
+    ]
+
+    for action in actions:
+        findings = detect_findings(
+            action,
+            "Development environment"
+        )
+
+        assert any(
+            finding.category == RiskCategory.DATA_EXFILTRATION
+            for finding in findings
+        )
