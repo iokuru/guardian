@@ -104,3 +104,12 @@ def test_semantic_similarity_negative_examples():
         )
 
         assert best_score < 0.75
+
+
+def test_semantic_confidence():
+    from app.services.semantic_detector import semantic_confidence
+
+    assert semantic_confidence(0.70) == 0.0
+    assert semantic_confidence(0.75) == 0.0
+    assert semantic_confidence(0.875) == 0.5
+    assert semantic_confidence(1.0) == 1.0
