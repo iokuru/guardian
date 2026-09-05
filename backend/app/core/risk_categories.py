@@ -48,7 +48,14 @@ EXFILTRATION_KEYWORDS = [
     "export customer data",
     "upload customer data",
     "copy customer data",
-    "download customer database"
+    "download customer database",
+    "send customer data",
+    "upload database",
+    "export database",
+    "download customer data",
+    "transfer customer data",
+    "transfer database",
+    "exfiltrate data",
 ]
 
 PRODUCTION_KEYWORDS = [
