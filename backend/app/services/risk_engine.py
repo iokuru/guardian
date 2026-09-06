@@ -45,7 +45,7 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
 
     reasons = get_risk_reasons(findings, scopes)
 
-    categories = get_risk_categories(findings)
+    #categories = get_risk_categories(findings)
 
     decision, risk_level, decision_reason = get_policy_decision(
         score,
