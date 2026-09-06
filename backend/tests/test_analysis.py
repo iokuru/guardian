@@ -1121,3 +1121,32 @@ def test_policy_blocks_when_any_critical_combination_matches():
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
+
+
+def test_analyze_normalizes_input_before_detection():
+    clean = client.post(
+        "/analyze",
+        json={
+            "action": "Delete all customer records",
+            "context": "Production database",
+        },
+    )
+
+    messy = client.post(
+        "/analyze",
+        json={
+            "action": "  DELETE   ALL   CUSTOMER   RECORDS  ",
+            "context": "  PRODUCTION   DATABASE  ",
+        },
+    )
+
+    assert clean.status_code == 200
+    assert messy.status_code == 200
+
+    clean_data = clean.json()
+    messy_data = messy.json()
+
+    assert messy_data["decision"] == clean_data["decision"]
+    assert messy_data["risk_score"] == clean_data["risk_score"]
+    assert messy_data["risk_level"] == clean_data["risk_level"]
+    assert messy_data["risk_categories"] == clean_data["risk_categories"]

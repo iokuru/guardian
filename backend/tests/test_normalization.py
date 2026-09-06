@@ -15,3 +15,7 @@ def test_normalize_text_collapses_whitespace():
 
 def test_normalize_text_combines_normalization():
     assert normalize_text("  DELETE   ALL   DATA  ") == "delete all data"
+
+
+def test_normalize_text_handles_whitespace_only():
+    assert normalize_text("   ") == ""
