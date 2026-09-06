@@ -25,6 +25,9 @@ def test_create_analysis_persists_analysis_and_findings():
         risk_score=1.0,
         risk_level=RiskLevel.CRITICAL,
         decision_reason="Critical policy override",
+        policy_version="1.0",
+        detector_version="1.0",
+        semantic_model="all-MiniLM-L6-v2",
         risk_categories=[
             RiskCategory.DESTRUCTIVE,
             RiskCategory.PRODUCTION,
@@ -102,6 +105,9 @@ def test_create_analysis_rolls_back_on_failure():
         risk_score=1.0,
         risk_level=RiskLevel.CRITICAL,
         decision_reason="Critical policy override",
+        policy_version="1.0",
+        detector_version="1.0",
+        semantic_model="all-MiniLM-L6-v2",
         risk_categories=[
             RiskCategory.DESTRUCTIVE,
             RiskCategory.PRODUCTION,

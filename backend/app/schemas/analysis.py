@@ -27,6 +27,9 @@ class AnalysisResponse(BaseModel):
     reasons: list[str]
     scopes: list[RiskCategory]
     findings: list[RiskFinding]
+    policy_version: str
+    detector_version: str
+    semantic_model: str
     
 
 

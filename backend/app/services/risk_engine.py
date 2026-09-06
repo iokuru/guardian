@@ -16,6 +16,11 @@ from app.services.reasons import get_risk_reasons
 from app.services.scoring import calculate_risk_score
 from app.services.aggregation import get_risk_categories
 from app.services.normalization import normalize_text
+from app.core.versions import (
+    POLICY_VERSION,
+    DETECTOR_VERSION,
+    SEMANTIC_MODEL,
+)
 
 
 def detect_scope(action: str):
@@ -41,7 +46,7 @@ def detect_scope(action: str):
 
 def analyze_risk(action: str, context: str) -> AnalysisResponse:
     action = normalize_text(action)
-    
+
     context = normalize_text(context)
 
     findings, scopes = collect_findings(action, context)
@@ -66,6 +71,9 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
         reasons=reasons,
         scopes=scopes,
         findings=findings,
+        policy_version=POLICY_VERSION,
+        detector_version=DETECTOR_VERSION,
+        semantic_model=SEMANTIC_MODEL,
     )
 
 
