@@ -1248,3 +1248,21 @@ def test_analyze_returns_500_when_persistence_fails(monkeypatch):
     assert response.json() == {
         "detail": "Analysis could not be persisted"
     }
+
+
+def test_analyze_returns_audit_metadata():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete customer records",
+            "context": "Production database",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["policy_version"] == "1.0"
+    assert data["detector_version"] == "1.0"
+    assert data["semantic_model"] == "all-MiniLM-L6-v2"
