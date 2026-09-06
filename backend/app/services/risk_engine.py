@@ -14,6 +14,7 @@ from app.schemas.risk import RiskFinding
 from app.services.detector import contains_keyword, detect_findings
 from app.services.reasons import get_risk_reasons
 from app.services.scoring import calculate_risk_score
+from app.services.aggregation import get_risk_categories
 
 
 def detect_scope(action: str):
@@ -43,6 +44,8 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
     score = calculate_risk_score(findings)
 
     reasons = get_risk_reasons(findings, scopes)
+
+    categories = get_risk_categories(findings)
 
     decision, risk_level, decision_reason = get_policy_decision(
         score,
