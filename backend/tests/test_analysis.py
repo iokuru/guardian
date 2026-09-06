@@ -927,6 +927,9 @@ def test_list_analyses_returns_saved_analysis():
     assert data[0]["action"] == "Delete all customer records"
     assert data[0]["decision"] == "BLOCK"
     assert "findings" in data[0]
+    assert data[0]["policy_version"] == "1.0"
+    assert data[0]["detector_version"] == "1.0"
+    assert data[0]["semantic_model"] == "all-MiniLM-L6-v2"
 
 
 def test_get_analysis_returns_saved_analysis():
@@ -953,6 +956,9 @@ def test_get_analysis_returns_saved_analysis():
     assert data["action"] == "Delete customer records"
     assert data["decision"] == "BLOCK"
     assert "findings" in data
+    assert data["policy_version"] == "1.0"
+    assert data["detector_version"] == "1.0"
+    assert data["semantic_model"] == "all-MiniLM-L6-v2"
 
 
 def test_get_missing_analysis_returns_404():
