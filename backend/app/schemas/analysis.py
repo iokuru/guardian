@@ -6,8 +6,8 @@ from app.schemas.risk import RiskFinding
 
 
 class AnalysisRequest(BaseModel):
-    action: str = Field(min_length=1)
-    context: str = Field(min_length=1)
+    action: str = Field(min_length=1, max_length=1000)
+    context: str = Field(min_length=1, max_length=2000)
 
     @field_validator("action", "context")
     @classmethod

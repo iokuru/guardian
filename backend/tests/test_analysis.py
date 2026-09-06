@@ -1174,3 +1174,51 @@ def test_analyze_rejects_blank_context():
     )
 
     assert response.status_code == 422
+
+
+def test_analyze_rejects_action_over_max_length():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "a" * 1001,
+            "context": "Production database",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_analyze_rejects_context_over_max_length():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete customer records",
+            "context": "a" * 2001,
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_analyze_accepts_max_length_action():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "a" * 1000,
+            "context": "Production database",
+        },
+    )
+
+    assert response.status_code == 200
+
+
+def test_analyze_accepts_max_length_context():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete customer records",
+            "context": "a" * 2000,
+        },
+    )
+
+    assert response.status_code == 200
