@@ -35,11 +35,30 @@ def get_policy_decision(
     findings: list[RiskFinding] | None = None,
 ):
     if findings and has_critical_override(findings):
-        return (
-            RiskDecision.BLOCK,
-            RiskLevel.CRITICAL,
-            "Critical policy override",
-        )
+        categories = {
+            finding.category
+            for finding in findings
+        }
+
+        if (
+            RiskCategory.CREDENTIAL_ACCESS in categories
+            and RiskCategory.PRODUCTION in categories
+        ):
+            return (
+                RiskDecision.BLOCK,
+                RiskLevel.CRITICAL,
+                "Critical policy override: credential access in production",
+            )
+
+        if (
+            RiskCategory.DESTRUCTIVE in categories
+            and RiskCategory.PRODUCTION in categories
+        ):
+            return (
+                RiskDecision.BLOCK,
+                RiskLevel.CRITICAL,
+                "Critical policy override: destructive action in production",
+            )
 
     if score >= BLOCK_THRESHOLD:
         return (
