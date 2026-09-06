@@ -1150,3 +1150,27 @@ def test_analyze_normalizes_input_before_detection():
     assert messy_data["risk_score"] == clean_data["risk_score"]
     assert messy_data["risk_level"] == clean_data["risk_level"]
     assert messy_data["risk_categories"] == clean_data["risk_categories"]
+
+
+def test_analyze_rejects_blank_action():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "   ",
+            "context": "Production database",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_analyze_rejects_blank_context():
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete customer records",
+            "context": "   ",
+        },
+    )
+
+    assert response.status_code == 422

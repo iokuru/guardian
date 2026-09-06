@@ -1,7 +1,5 @@
 from datetime import datetime
-
-from pydantic import BaseModel, Field, ConfigDict
-
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from app.core.decision_types import RiskDecision, RiskLevel
 from app.core.risk_types import RiskCategory
 from app.schemas.risk import RiskFinding
@@ -10,6 +8,14 @@ from app.schemas.risk import RiskFinding
 class AnalysisRequest(BaseModel):
     action: str = Field(min_length=1)
     context: str = Field(min_length=1)
+
+    @field_validator("action", "context")
+    @classmethod
+    def validate_not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("must not be blank")
+
+        return value
 
 
 class AnalysisResponse(BaseModel):
