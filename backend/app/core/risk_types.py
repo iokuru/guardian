@@ -15,6 +15,13 @@ class RiskCategory(str, Enum):
     TEMPORARY_FILES = "TEMPORARY_FILES"
 
 
+class RiskSeverity(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+    
+
 class FindingSource(str, Enum):
     ACTION = "ACTION"
     CONTEXT = "CONTEXT"
