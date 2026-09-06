@@ -35,15 +35,35 @@ def get_policy_decision(
     findings: list[RiskFinding] | None = None,
 ):
     if findings and has_critical_override(findings):
-        return RiskDecision.BLOCK, RiskLevel.CRITICAL
+        return (
+            RiskDecision.BLOCK,
+            RiskLevel.CRITICAL,
+            "Critical policy override",
+        )
 
     if score >= BLOCK_THRESHOLD:
-        return RiskDecision.BLOCK, RiskLevel.CRITICAL
+        return (
+            RiskDecision.BLOCK,
+            RiskLevel.CRITICAL,
+            "Risk score exceeded block threshold",
+        )
 
     if score >= REVIEW_THRESHOLD:
-        return RiskDecision.REVIEW, RiskLevel.HIGH
+        return (
+            RiskDecision.REVIEW,
+            RiskLevel.HIGH,
+            "Risk score exceeded review threshold",
+        )
 
     if score >= LOW_THRESHOLD:
-        return RiskDecision.ALLOW, RiskLevel.MEDIUM
+        return (
+            RiskDecision.ALLOW,
+            RiskLevel.MEDIUM,
+            "Risk score indicates medium risk",
+        )
 
-    return RiskDecision.ALLOW, RiskLevel.LOW
+    return (
+        RiskDecision.ALLOW,
+        RiskLevel.LOW,
+        "Risk score indicates low risk",
+    )

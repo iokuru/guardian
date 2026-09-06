@@ -24,6 +24,7 @@ def test_create_analysis_persists_analysis_and_findings():
         decision=RiskDecision.BLOCK,
         risk_score=1.0,
         risk_level=RiskLevel.CRITICAL,
+        decision_reason="Critical policy override",
         reasons=[
             "Destructive action",
             "Production environment",

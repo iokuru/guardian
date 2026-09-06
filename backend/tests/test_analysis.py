@@ -545,7 +545,7 @@ def test_policy_low_boundary():
     from app.core.decision_types import RiskDecision, RiskLevel
     from app.core.policy import get_policy_decision
 
-    decision, level = get_policy_decision(0.19)
+    decision, level, reason = get_policy_decision(0.19)
 
     assert decision == RiskDecision.ALLOW
     assert level == RiskLevel.LOW
@@ -555,7 +555,7 @@ def test_policy_medium_boundary():
     from app.core.decision_types import RiskDecision, RiskLevel
     from app.core.policy import get_policy_decision
 
-    decision, level = get_policy_decision(0.20)
+    decision, level, reason = get_policy_decision(0.20)
 
     assert decision == RiskDecision.ALLOW
     assert level == RiskLevel.MEDIUM
@@ -565,7 +565,7 @@ def test_policy_high_boundary():
     from app.core.decision_types import RiskDecision, RiskLevel
     from app.core.policy import get_policy_decision
 
-    decision, level = get_policy_decision(0.50)
+    decision, level, reason = get_policy_decision(0.50)
 
     assert decision == RiskDecision.REVIEW
     assert level == RiskLevel.HIGH
@@ -575,7 +575,7 @@ def test_policy_critical_boundary():
     from app.core.decision_types import RiskDecision, RiskLevel
     from app.core.policy import get_policy_decision
 
-    decision, level = get_policy_decision(0.80)
+    decision, level, reason = get_policy_decision(0.80)
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
@@ -986,28 +986,28 @@ def test_list_analyses_rejects_invalid_limit():
 
 
 def test_policy_allows_low_risk():
-    decision, level = get_policy_decision(0.19)
+    decision, level, reason = get_policy_decision(0.19)
 
     assert decision == RiskDecision.ALLOW
     assert level == RiskLevel.LOW
 
 
 def test_policy_allows_medium_risk():
-    decision, level = get_policy_decision(0.20)
+    decision, level, reason = get_policy_decision(0.20)
 
     assert decision == RiskDecision.ALLOW
     assert level == RiskLevel.MEDIUM
 
 
 def test_policy_reviews_high_risk():
-    decision, level = get_policy_decision(0.50)
+    decision, level, reason = get_policy_decision(0.50)
 
     assert decision == RiskDecision.REVIEW
     assert level == RiskLevel.HIGH
 
 
 def test_policy_blocks_critical_risk():
-    decision, level = get_policy_decision(0.80)
+    decision, level, reason = get_policy_decision(0.80)
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
@@ -1029,7 +1029,7 @@ def test_policy_blocks_credential_access_in_production():
         ),
     ]
 
-    decision, level = get_policy_decision(0.30, findings)
+    decision, level, reason = get_policy_decision(0.30, findings)
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
@@ -1051,7 +1051,7 @@ def test_policy_blocks_destructive_action_in_production():
         ),
     ]
 
-    decision, level = get_policy_decision(0.30, findings)
+    decision, level, reason = get_policy_decision(0.30, findings)
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
@@ -1067,7 +1067,7 @@ def test_policy_does_not_override_single_critical_category():
         ),
     ]
 
-    decision, level = get_policy_decision(0.60, findings)
+    decision, level, reason = get_policy_decision(0.60, findings)
 
     assert decision == RiskDecision.REVIEW
     assert level == RiskLevel.HIGH
@@ -1089,7 +1089,7 @@ def test_policy_does_not_override_unrelated_findings():
         ),
     ]
 
-    decision, level = get_policy_decision(0.70, findings)
+    decision, level, reason = get_policy_decision(0.70, findings)
 
     assert decision == RiskDecision.REVIEW
     assert level == RiskLevel.HIGH
@@ -1117,7 +1117,7 @@ def test_policy_blocks_when_any_critical_combination_matches():
         ),
     ]
 
-    decision, level = get_policy_decision(0.30, findings)
+    decision, level, reason = get_policy_decision(0.30, findings)
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
