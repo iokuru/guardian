@@ -1,5 +1,4 @@
 from app.core.policy import get_policy_decision
-from app.services.semantic_detector import detect_semantic_findings
 from app.core.risk_scope import (
     CUSTOMER_DATA_KEYWORDS,
     DATABASE_KEYWORDS,
@@ -9,18 +8,28 @@ from app.core.risk_scope import (
 )
 from app.core.risk_types import FindingSource, RiskCategory
 from app.core.scope_scores import SCOPE_SCORES
-from app.schemas.analysis import AnalysisResponse
-from app.schemas.risk import RiskFinding
-from app.services.detector import contains_keyword, detect_findings
-from app.services.reasons import get_risk_reasons
-from app.services.scoring import calculate_risk_score
-from app.services.aggregation import get_risk_categories
-from app.services.normalization import normalize_text
 from app.core.versions import (
-    POLICY_VERSION,
     DETECTOR_VERSION,
+    POLICY_VERSION,
     SEMANTIC_MODEL,
 )
+from app.schemas.analysis import AnalysisResponse
+from app.schemas.risk import RiskFinding
+from app.services.aggregation import get_risk_categories
+from app.services.detector import contains_keyword, detect_findings
+from app.services.finding_factory import create_finding
+from app.services.normalization import normalize_text
+from app.services.reasons import get_risk_reasons
+from app.services.scoring import calculate_risk_score
+from app.services.semantic_detector import detect_semantic_findings
+
+SCOPE_REASONS = {
+    RiskCategory.CUSTOMER_DATA: "Customer Data scope",
+    RiskCategory.FINANCIAL_DATA: "Financial Data scope",
+    RiskCategory.EMPLOYEE_DATA: "Employee Data scope",
+    RiskCategory.DATABASE: "Database scope",
+    RiskCategory.TEMPORARY_FILES: "Temporary Files scope",
+}
 
 
 def detect_scope(action: str):
@@ -77,10 +86,9 @@ def analyze_risk(action: str, context: str) -> AnalysisResponse:
     )
 
 
-def collect_findings(action: str, context: str) -> tuple[
-    list[RiskFinding],
-    list[RiskCategory]
-]:
+def collect_findings(
+    action: str, context: str
+) -> tuple[list[RiskFinding], list[RiskCategory]]:
     findings = detect_findings(action, context)
 
     semantic_findings = detect_semantic_findings(action, context)
@@ -100,11 +108,11 @@ def collect_findings(action: str, context: str) -> tuple[
 
     for scope in scopes:
         findings.append(
-            RiskFinding(
+            create_finding(
                 category=scope,
                 score=SCOPE_SCORES[scope],
-                reason=f"{scope.value.replace('_', ' ').title()} scope",
-                source=FindingSource.SCOPE
+                reason=SCOPE_REASONS[scope],
+                source=FindingSource.SCOPE,
             )
         )
 

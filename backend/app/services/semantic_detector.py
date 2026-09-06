@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer, util
-
+from app.services.finding_factory import create_finding
 from app.core.risk_scores import (
     CREDENTIAL_SCORE,
     DESTRUCTIVE_SCORE,
@@ -88,7 +88,7 @@ def detect_semantic_findings(
             confidence = semantic_confidence(best_score)
 
             findings.append(
-                RiskFinding(
+                create_finding(
                     category=category,
                     score=INTENT_SCORES[category.value],
                     reason=(

@@ -487,21 +487,30 @@ def test_complete_risk_pipeline():
         "CUSTOMER_DATA"
     ]
     assert len(data["findings"]) == 3
+
     assert data["findings"][0] == {
         "category": "DESTRUCTIVE",
+        "severity": "HIGH",
         "score": 0.7,
         "reason": "Destructive action",
         "source": "ACTION"
     }
+
     assert data["findings"][1] == {
         "category": "PRODUCTION",
+        "severity": "MEDIUM",
         "score": 0.25,
         "reason": "Production environment",
         "source": "CONTEXT"
     }
-    assert data["findings"][2]["category"] == "CUSTOMER_DATA"
-    assert data["findings"][2]["score"] == 0.15
-    assert data["findings"][2]["source"] == "SCOPE"
+
+    assert data["findings"][2] == {
+        "category": "CUSTOMER_DATA",
+        "severity": "MEDIUM",
+        "score": 0.15,
+        "reason": "Customer Data scope",
+        "source": "SCOPE"
+    }
 
 
 
