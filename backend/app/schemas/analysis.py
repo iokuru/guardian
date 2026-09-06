@@ -30,5 +30,8 @@ class AnalysisRecord(BaseModel):
     decision: RiskDecision
     risk_score: float
     risk_level: RiskLevel
+    policy_version: str
+    detector_version: str
+    semantic_model: str
     created_at: datetime
     findings: list[RiskFinding] = Field(default_factory=list)
