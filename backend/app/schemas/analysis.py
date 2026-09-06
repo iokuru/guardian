@@ -17,9 +17,11 @@ class AnalysisResponse(BaseModel):
     risk_score: float
     risk_level: RiskLevel
     decision_reason: str
+    risk_categories: list[RiskCategory]
     reasons: list[str]
     scopes: list[RiskCategory]
     findings: list[RiskFinding]
+    
 
 
 class AnalysisRecord(BaseModel):

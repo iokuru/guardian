@@ -25,6 +25,11 @@ def test_create_analysis_persists_analysis_and_findings():
         risk_score=1.0,
         risk_level=RiskLevel.CRITICAL,
         decision_reason="Critical policy override",
+        risk_categories=[
+            RiskCategory.DESTRUCTIVE,
+            RiskCategory.PRODUCTION,
+            RiskCategory.CUSTOMER_DATA,
+        ],
         reasons=[
             "Destructive action",
             "Production environment",
