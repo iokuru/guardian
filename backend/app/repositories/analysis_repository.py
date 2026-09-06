@@ -4,7 +4,11 @@ from app.models.analysis import Analysis
 from app.models.finding import Finding
 from app.schemas.analysis import AnalysisResponse
 from sqlalchemy import select
-
+from app.core.versions import (
+    POLICY_VERSION,
+    DETECTOR_VERSION,
+    SEMANTIC_MODEL,
+)
 
 def get_analyses(
     db: Session,
@@ -36,6 +40,9 @@ def create_analysis(
         decision=result.decision.value,
         risk_score=result.risk_score,
         risk_level=result.risk_level.value,
+        policy_version=POLICY_VERSION,
+        detector_version=DETECTOR_VERSION,
+        semantic_model=SEMANTIC_MODEL,
     )
 
     db.add(analysis)
