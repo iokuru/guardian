@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-
+from sqlalchemy.exc import SQLAlchemyError
 from app.models.dependencies import get_db
 from app.schemas.analysis import (
     AnalysisRecord,
@@ -20,11 +20,17 @@ def analyze_endpoint(
     request: AnalysisRequest,
     db: Session = Depends(get_db),
 ):
-    return analyze(
-        request.action,
-        request.context,
-        db,
-    )
+    try:
+        return analyze(
+            request.action,
+            request.context,
+            db,
+        )
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail="Analysis could not be persisted",
+        )
 
 @router.get(
     "/analyses",

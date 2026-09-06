@@ -1222,3 +1222,29 @@ def test_analyze_accepts_max_length_context():
     )
 
     assert response.status_code == 200
+
+
+
+def test_analyze_returns_500_when_persistence_fails(monkeypatch):
+    from sqlalchemy.exc import SQLAlchemyError
+
+    def failing_analyze(action, context, db):
+        raise SQLAlchemyError("database failure")
+
+    monkeypatch.setattr(
+        "app.api.analysis.analyze",
+        failing_analyze,
+    )
+
+    response = client.post(
+        "/analyze",
+        json={
+            "action": "Delete customer records",
+            "context": "Production database",
+        },
+    )
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "detail": "Analysis could not be persisted"
+    }
