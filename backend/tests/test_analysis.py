@@ -12,6 +12,8 @@ from app.models.finding import Finding
 from app.core.decision_types import RiskDecision, RiskLevel
 from app.core.policy import get_policy_decision
 
+from app.core.risk_types import FindingSource, RiskCategory
+from app.schemas.risk import RiskFinding
 
 test_engine = create_engine(
     "sqlite:///:memory:",
@@ -1006,6 +1008,28 @@ def test_policy_reviews_high_risk():
 
 def test_policy_blocks_critical_risk():
     decision, level = get_policy_decision(0.80)
+
+    assert decision == RiskDecision.BLOCK
+    assert level == RiskLevel.CRITICAL
+
+
+def test_policy_blocks_credential_access_in_production():
+    findings = [
+        RiskFinding(
+            category=RiskCategory.CREDENTIAL_ACCESS,
+            score=0.60,
+            reason="Credential access",
+            source=FindingSource.ACTION,
+        ),
+        RiskFinding(
+            category=RiskCategory.PRODUCTION,
+            score=0.25,
+            reason="Production environment",
+            source=FindingSource.CONTEXT,
+        ),
+    ]
+
+    decision, level = get_policy_decision(0.30, findings)
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
