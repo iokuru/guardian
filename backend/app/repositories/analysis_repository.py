@@ -34,32 +34,37 @@ def create_analysis(
     context: str,
     result: AnalysisResponse,
 ) -> Analysis:
-    analysis = Analysis(
-        action=action,
-        context=context,
-        decision=result.decision.value,
-        risk_score=result.risk_score,
-        risk_level=result.risk_level.value,
-        policy_version=POLICY_VERSION,
-        detector_version=DETECTOR_VERSION,
-        semantic_model=SEMANTIC_MODEL,
-    )
-
-    db.add(analysis)
-    db.flush()
-
-    for finding in result.findings:
-        db.add(
-            Finding(
-                analysis_id=analysis.id,
-                category=finding.category.value,
-                score=finding.score,
-                reason=finding.reason,
-                source=finding.source.value,
-            )
+    try:
+        analysis = Analysis(
+            action=action,
+            context=context,
+            decision=result.decision.value,
+            risk_score=result.risk_score,
+            risk_level=result.risk_level.value,
+            policy_version=POLICY_VERSION,
+            detector_version=DETECTOR_VERSION,
+            semantic_model=SEMANTIC_MODEL,
         )
 
-    db.commit()
-    db.refresh(analysis)
+        db.add(analysis)
+        db.flush()
 
-    return analysis
+        for finding in result.findings:
+            db.add(
+                Finding(
+                    analysis_id=analysis.id,
+                    category=finding.category.value,
+                    score=finding.score,
+                    reason=finding.reason,
+                    source=finding.source.value,
+                )
+            )
+
+        db.commit()
+        db.refresh(analysis)
+
+        return analysis
+
+    except Exception:
+        db.rollback()
+        raise
