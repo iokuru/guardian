@@ -1033,3 +1033,25 @@ def test_policy_blocks_credential_access_in_production():
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
+
+
+def test_policy_blocks_destructive_action_in_production():
+    findings = [
+        RiskFinding(
+            category=RiskCategory.DESTRUCTIVE,
+            score=0.70,
+            reason="Destructive action",
+            source=FindingSource.ACTION,
+        ),
+        RiskFinding(
+            category=RiskCategory.PRODUCTION,
+            score=0.25,
+            reason="Production environment",
+            source=FindingSource.CONTEXT,
+        ),
+    ]
+
+    decision, level = get_policy_decision(0.30, findings)
+
+    assert decision == RiskDecision.BLOCK
+    assert level == RiskLevel.CRITICAL

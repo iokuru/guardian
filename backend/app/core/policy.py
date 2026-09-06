@@ -6,15 +6,28 @@ LOW_THRESHOLD = 0.20
 REVIEW_THRESHOLD = 0.50
 BLOCK_THRESHOLD = 0.80
 
-def has_critical_override(findings: list[RiskFinding]) -> bool:
+CRITICAL_COMBINATIONS = {
+    frozenset({
+        RiskCategory.CREDENTIAL_ACCESS,
+        RiskCategory.PRODUCTION,
+    }),
+    frozenset({
+        RiskCategory.DESTRUCTIVE,
+        RiskCategory.PRODUCTION,
+    }),
+}
+
+def has_critical_override(
+    findings: list[RiskFinding],
+) -> bool:
     categories = {
         finding.category
         for finding in findings
     }
 
-    return (
-        RiskCategory.CREDENTIAL_ACCESS in categories
-        and RiskCategory.PRODUCTION in categories
+    return any(
+        combination.issubset(categories)
+        for combination in CRITICAL_COMBINATIONS
     )
 
 def get_policy_decision(
