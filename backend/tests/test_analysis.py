@@ -9,6 +9,9 @@ from app.models.dependencies import get_db
 from app.models.analysis import Analysis
 from app.models.finding import Finding
 
+from app.core.decision_types import RiskDecision, RiskLevel
+from app.core.policy import get_policy_decision
+
 
 test_engine = create_engine(
     "sqlite:///:memory:",
@@ -978,3 +981,31 @@ def test_list_analyses_rejects_invalid_limit():
     response = client.get("/analyses?limit=101")
 
     assert response.status_code == 422
+
+
+def test_policy_allows_low_risk():
+    decision, level = get_policy_decision(0.19)
+
+    assert decision == RiskDecision.ALLOW
+    assert level == RiskLevel.LOW
+
+
+def test_policy_allows_medium_risk():
+    decision, level = get_policy_decision(0.20)
+
+    assert decision == RiskDecision.ALLOW
+    assert level == RiskLevel.MEDIUM
+
+
+def test_policy_reviews_high_risk():
+    decision, level = get_policy_decision(0.50)
+
+    assert decision == RiskDecision.REVIEW
+    assert level == RiskLevel.HIGH
+
+
+def test_policy_blocks_critical_risk():
+    decision, level = get_policy_decision(0.80)
+
+    assert decision == RiskDecision.BLOCK
+    assert level == RiskLevel.CRITICAL
