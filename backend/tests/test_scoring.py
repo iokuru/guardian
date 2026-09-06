@@ -60,3 +60,22 @@ def test_score_is_capped_at_one():
     ]
 
     assert calculate_risk_score(findings) == 1.0
+
+
+def test_duplicate_risk_categories_are_counted_once():
+    findings = [
+        RiskFinding(
+            category=RiskCategory.DESTRUCTIVE,
+            score=0.70,
+            reason="Destructive action",
+            source=FindingSource.ACTION,
+        ),
+        RiskFinding(
+            category=RiskCategory.DESTRUCTIVE,
+            score=0.70,
+            reason="Destructive action",
+            source=FindingSource.MODEL,
+        ),
+    ]
+
+    assert calculate_risk_score(findings) == 0.70
