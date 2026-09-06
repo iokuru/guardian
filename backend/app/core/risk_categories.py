@@ -67,3 +67,18 @@ PRODUCTION_KEYWORDS = [
     "prod",
     "live"
 ]
+
+from app.core.risk_types import RiskCategory, RiskSeverity
+
+RISK_SEVERITIES = {
+    RiskCategory.DESTRUCTIVE: RiskSeverity.HIGH,
+    RiskCategory.PRIVILEGE_ESCALATION: RiskSeverity.HIGH,
+    RiskCategory.CREDENTIAL_ACCESS: RiskSeverity.HIGH,
+    RiskCategory.DATA_EXFILTRATION: RiskSeverity.CRITICAL,
+    RiskCategory.PRODUCTION: RiskSeverity.MEDIUM,
+    RiskCategory.CUSTOMER_DATA: RiskSeverity.MEDIUM,
+    RiskCategory.FINANCIAL_DATA: RiskSeverity.MEDIUM,
+    RiskCategory.EMPLOYEE_DATA: RiskSeverity.MEDIUM,
+    RiskCategory.DATABASE: RiskSeverity.MEDIUM,
+    RiskCategory.TEMPORARY_FILES: RiskSeverity.LOW,
+}
