@@ -48,3 +48,18 @@ class Analysis(Base):
         back_populates="analysis",
         cascade="all, delete-orphan",
     )
+
+    policy_version: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    detector_version: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    semantic_model: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
