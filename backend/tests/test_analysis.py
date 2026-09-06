@@ -1055,3 +1055,69 @@ def test_policy_blocks_destructive_action_in_production():
 
     assert decision == RiskDecision.BLOCK
     assert level == RiskLevel.CRITICAL
+
+
+def test_policy_does_not_override_single_critical_category():
+    findings = [
+        RiskFinding(
+            category=RiskCategory.CREDENTIAL_ACCESS,
+            score=0.60,
+            reason="Credential access",
+            source=FindingSource.ACTION,
+        ),
+    ]
+
+    decision, level = get_policy_decision(0.60, findings)
+
+    assert decision == RiskDecision.REVIEW
+    assert level == RiskLevel.HIGH
+
+
+def test_policy_does_not_override_unrelated_findings():
+    findings = [
+        RiskFinding(
+            category=RiskCategory.DESTRUCTIVE,
+            score=0.70,
+            reason="Destructive action",
+            source=FindingSource.ACTION,
+        ),
+        RiskFinding(
+            category=RiskCategory.CUSTOMER_DATA,
+            score=0.15,
+            reason="Customer Data scope",
+            source=FindingSource.SCOPE,
+        ),
+    ]
+
+    decision, level = get_policy_decision(0.70, findings)
+
+    assert decision == RiskDecision.REVIEW
+    assert level == RiskLevel.HIGH
+
+
+def test_policy_blocks_when_any_critical_combination_matches():
+    findings = [
+        RiskFinding(
+            category=RiskCategory.CUSTOMER_DATA,
+            score=0.15,
+            reason="Customer Data scope",
+            source=FindingSource.SCOPE,
+        ),
+        RiskFinding(
+            category=RiskCategory.DESTRUCTIVE,
+            score=0.70,
+            reason="Destructive action",
+            source=FindingSource.ACTION,
+        ),
+        RiskFinding(
+            category=RiskCategory.PRODUCTION,
+            score=0.25,
+            reason="Production environment",
+            source=FindingSource.CONTEXT,
+        ),
+    ]
+
+    decision, level = get_policy_decision(0.30, findings)
+
+    assert decision == RiskDecision.BLOCK
+    assert level == RiskLevel.CRITICAL
