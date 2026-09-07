@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
-
+from app.api.auth import router as auth_router
 from app.api.analysis import router as analysis_router
 
 
@@ -25,3 +25,4 @@ def health():
 
 
 app.include_router(analysis_router)
+app.include_router(auth_router)
