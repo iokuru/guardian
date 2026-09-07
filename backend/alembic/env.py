@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from app.models.database import Base
 from app.models.analysis import Analysis
 from app.models.finding import Finding
+from app.models.user import User
 
 
 load_dotenv()
