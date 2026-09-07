@@ -30,6 +30,11 @@ class Finding(Base):
         nullable=False,
     )
 
+    severity: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+    
     score: Mapped[float] = mapped_column(
         Float,
         nullable=False,

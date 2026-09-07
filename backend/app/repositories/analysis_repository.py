@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from app.services.severity import get_risk_severity
 from app.models.analysis import Analysis
 from app.models.finding import Finding
 from app.schemas.analysis import AnalysisResponse
@@ -54,6 +54,11 @@ def create_analysis(
                 Finding(
                     analysis_id=analysis.id,
                     category=finding.category.value,
+                    severity=(
+                        finding.severity.value
+                        if finding.severity is not None
+                        else get_risk_severity(finding.category).value
+                    ),
                     score=finding.score,
                     reason=finding.reason,
                     source=finding.source.value,
