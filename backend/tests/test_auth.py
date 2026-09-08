@@ -8,6 +8,13 @@ from app.main import app
 from app.models.database import Base
 from app.models.dependencies import get_db
 
+import jwt
+from datetime import datetime, timedelta, timezone
+
+from app.core.security import create_access_token
+
+from app.core.security import SECRET_KEY, ALGORITHM
+
 test_engine = create_engine(
     "sqlite:///:memory:",
     connect_args={"check_same_thread": False},
@@ -217,3 +224,135 @@ def test_register_rejects_blank_email(client):
     )
 
     assert response.status_code == 422
+
+
+
+def test_register_rejects_blank_username(client):
+    response = client.post(
+        "/auth/register",
+        json={
+            "username": "   ",
+            "email": "blankuser@example.com",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+
+def test_register_strips_username_whitespace(client):
+    response = client.post(
+        "/auth/register",
+        json={
+            "username": "  alice  ",
+            "email": "alice@example.com",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["username"] == "alice"
+
+
+
+def test_invalid_token_missing_sub(client):
+    import jwt
+
+    from app.core.security import SECRET_KEY, ALGORITHM
+
+    token = jwt.encode(
+        {
+            "role": "ANALYST",
+        },
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+
+    response = client.get(
+        "/analyses",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_invalid_token_user_id(client):
+    import jwt
+
+    from app.core.security import SECRET_KEY, ALGORITHM
+
+    token = jwt.encode(
+        {
+            "sub": "abc",
+            "role": "ANALYST",
+        },
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+
+    response = client.get(
+        "/analyses",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+
+
+
+def test_invalid_token_role(client):
+    import jwt
+
+    from app.core.security import SECRET_KEY, ALGORITHM
+
+    token = jwt.encode(
+        {
+            "sub": "1",
+            "role": "SUPERUSER",
+        },
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+
+    response = client.get(
+        "/analyses",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+
+
+
+def test_expired_token_returns_401(client):
+    token = jwt.encode(
+        {
+            "sub": "1",
+            "role": "ANALYST",
+            "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
+        },
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+
+    response = client.get(
+        "/analyses",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid or expired token"  
+
+def create_user(db, role="ANALYST"):
+    from app.models.user import User
+
+    user = User(
+        username="deleted-user",
+        email="deleted-user@example.com",
+        hashed_password="hashed-password",
+        role=role,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
