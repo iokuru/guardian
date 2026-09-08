@@ -3,11 +3,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.security import decode_access_token
 from app.main import app
 from app.models.database import Base
 from app.models.dependencies import get_db
-from app.core.security import decode_access_token
-
 
 test_engine = create_engine(
     "sqlite:///:memory:",
@@ -38,6 +37,17 @@ app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 
+def register_alice():
+    return client.post(
+        "/auth/register",
+        json={
+            "username": "alice",
+            "email": "alice@example.com",
+            "password": "password123",
+        },
+    )
+
+
 def test_register_user():
     response = client.post(
         "/auth/register",
@@ -59,6 +69,8 @@ def test_register_user():
 
 
 def test_duplicate_username_rejected():
+    register_alice()
+
     response = client.post(
         "/auth/register",
         json={
@@ -72,6 +84,8 @@ def test_duplicate_username_rejected():
 
 
 def test_duplicate_email_rejected():
+    register_alice()
+
     response = client.post(
         "/auth/register",
         json={
@@ -85,6 +99,8 @@ def test_duplicate_email_rejected():
 
 
 def test_login_success():
+    register_alice()
+
     response = client.post(
         "/auth/login",
         json={
@@ -102,6 +118,8 @@ def test_login_success():
 
 
 def test_login_invalid_password():
+    register_alice()
+
     response = client.post(
         "/auth/login",
         json={
@@ -126,6 +144,8 @@ def test_login_invalid_username():
 
 
 def test_jwt_contains_user_identity():
+    register_alice()
+
     login_response = client.post(
         "/auth/login",
         json={
@@ -133,6 +153,8 @@ def test_jwt_contains_user_identity():
             "password": "password123",
         },
     )
+
+    assert login_response.status_code == 200
 
     token = login_response.json()["access_token"]
 
