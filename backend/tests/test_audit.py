@@ -1,3 +1,4 @@
+import pytest
 from app.core.security import create_access_token, hash_password
 from app.models.analysis import Analysis
 from app.models.audit_log import AuditLog
@@ -97,3 +98,28 @@ def test_audit_log_links_to_analysis(client, db):
 
     assert audit_log.analysis_id == analysis.id
     assert audit_log.user_id == analysis.user_id
+
+
+def test_analysis_and_audit_are_atomic(client, db, monkeypatch):
+    user = create_user(db)
+
+    def fail_audit(*args, **kwargs):
+        raise RuntimeError("Audit failure")
+
+    monkeypatch.setattr(
+        "app.repositories.analysis_repository.create_audit_log",
+        fail_audit,
+    )
+
+    with pytest.raises(RuntimeError, match="Audit failure"):
+        client.post(
+            "/analyze",
+            json={
+                "action": "Delete customer records",
+                "context": "Production database",
+            },
+            headers=get_auth_headers(user),
+        )
+
+    assert db.query(Analysis).count() == 0
+    assert db.query(AuditLog).count() == 0
