@@ -1,41 +1,55 @@
-from sqlalchemy.orm import Session
-from app.services.severity import get_risk_severity
-from app.models.analysis import Analysis
-from app.models.finding import Finding
-from app.schemas.analysis import AnalysisResponse
 from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from app.core.versions import (
     POLICY_VERSION,
     DETECTOR_VERSION,
     SEMANTIC_MODEL,
 )
+from app.models.analysis import Analysis
+from app.models.finding import Finding
+from app.schemas.analysis import AnalysisResponse
+from app.services.severity import get_risk_severity
+
 
 def get_analyses(
     db: Session,
+    user_id: int,
     limit: int = 50,
 ) -> list[Analysis]:
     return list(
         db.scalars(
             select(Analysis)
+            .where(Analysis.user_id == user_id)
             .order_by(Analysis.created_at.desc())
             .limit(limit)
         )
     )
 
+
 def get_analysis(
     db: Session,
     analysis_id: int,
+    user_id: int,
 ) -> Analysis | None:
-    return db.get(Analysis, analysis_id)
+    return db.scalar(
+        select(Analysis).where(
+            Analysis.id == analysis_id,
+            Analysis.user_id == user_id,
+        )
+    )
+
 
 def create_analysis(
     db: Session,
     action: str,
     context: str,
     result: AnalysisResponse,
+    user_id: int,
 ) -> Analysis:
     try:
         analysis = Analysis(
+            user_id=user_id,
             action=action,
             context=context,
             decision=result.decision.value,

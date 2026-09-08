@@ -8,12 +8,14 @@ from app.models.database import Base
 from app.models.dependencies import get_db
 from app.models.analysis import Analysis
 from app.models.finding import Finding
+from app.models.user import User
 
 from app.core.decision_types import RiskDecision, RiskLevel
 from app.core.policy import get_policy_decision
-
 from app.core.risk_types import FindingSource, RiskCategory
+from app.core.security import create_access_token, hash_password
 from app.schemas.risk import RiskFinding
+
 
 test_engine = create_engine(
     "sqlite:///:memory:",
@@ -43,6 +45,28 @@ app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
 
+
+test_user = User(
+    username="testuser",
+    email="test@example.com",
+    hashed_password=hash_password("password123"),
+    role="ANALYST",
+)
+
+db = TestingSessionLocal()
+db.add(test_user)
+db.commit()
+db.refresh(test_user)
+db.close()
+
+test_token = create_access_token(
+    test_user.id,
+    test_user.role,
+)
+
+client.headers.update(
+    {"Authorization": f"Bearer {test_token}"}
+)
 
 def test_health():
     response = client.get("/health")
@@ -1237,7 +1261,7 @@ def test_analyze_accepts_max_length_context():
 def test_analyze_returns_500_when_persistence_fails(monkeypatch):
     from sqlalchemy.exc import SQLAlchemyError
 
-    def failing_analyze(action, context, db):
+    def failing_analyze(action, context, db, user_id):
         raise SQLAlchemyError("database failure")
 
     monkeypatch.setattr(

@@ -28,18 +28,17 @@ def get_analysis_by_id(
 def analyze(
     action: str,
     context: str,
-    db: Session | None = None,
-    user_id: int | None = None,
+    db: Session,
+    user_id: int,
 ) -> AnalysisResponse:
     result = analyze_risk(action, context)
 
-    if db is not None:
-        create_analysis(
-            db,
-            action,
-            context,
-            result,
-            user_id,
-        )
+    create_analysis(
+        db,
+        action,
+        context,
+        result,
+        user_id,
+    )
 
     return result

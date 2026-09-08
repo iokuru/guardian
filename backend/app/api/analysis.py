@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.models.auth_dependencies import get_current_user
@@ -31,14 +31,16 @@ def analyze_endpoint(
 
 @router.get("/analyses", response_model=list[AnalysisRecord])
 def list_analyses_endpoint(
+    limit: int = Query(default=50, ge=1, le=100),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     user_id = int(current_user["sub"])
 
     return list_analyses(
-        db,
-        user_id,
+        db=db,
+        user_id=user_id,
+        limit=limit,
     )
 
 

@@ -63,11 +63,12 @@ def test_create_analysis_persists_analysis_and_findings():
     )
 
     analysis = create_analysis(
-        db,
-        "Delete all customer records",
-        "Production database",
-        result,
-    )
+                db,
+                "Delete customer data",
+                "Production",
+                result,
+                1,
+            )
 
     assert analysis.id is not None
     assert analysis.decision == "BLOCK"
@@ -130,9 +131,10 @@ def test_create_analysis_rolls_back_on_failure():
     with pytest.raises(RuntimeError, match="database failure"):
         create_analysis(
             db,
-            "Delete customer records",
-            "Production database",
+            "Delete customer data",
+            "Production",
             result,
+            1,
         )
 
     db.commit = original_commit
