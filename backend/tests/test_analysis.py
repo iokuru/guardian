@@ -1385,3 +1385,90 @@ def test_list_analyses_rejects_negative_offset(client, db):
     )
 
     assert response.status_code == 422
+
+
+
+def test_analysis_stats(client, db):
+    user = create_user(db)
+
+    create_analysis_record(
+        db,
+        user.id,
+        "Allow action",
+        decision="ALLOW",
+        risk_score=0.1,
+        risk_level="LOW",
+    )
+
+    create_analysis_record(
+        db,
+        user.id,
+        "Review action",
+        decision="REVIEW",
+        risk_score=0.6,
+        risk_level="HIGH",
+    )
+
+    create_analysis_record(
+        db,
+        user.id,
+        "Block action",
+        decision="BLOCK",
+        risk_score=1.0,
+        risk_level="CRITICAL",
+    )
+
+    response = client.get(
+        "/analyses/stats",
+        headers=get_auth_headers(user),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "total": 3,
+        "allow": 1,
+        "review": 1,
+        "block": 1,
+    }
+
+
+
+def test_analysis_stats_are_user_scoped(client, db):
+    user1 = create_user(db)
+    user2 = create_user(db)
+
+    create_analysis_record(
+        db,
+        user1.id,
+        "User 1 block",
+        decision="BLOCK",
+    )
+
+    create_analysis_record(
+        db,
+        user2.id,
+        "User 2 allow",
+        decision="ALLOW",
+        risk_score=0.1,
+        risk_level="LOW",
+    )
+
+    response = client.get(
+        "/analyses/stats",
+        headers=get_auth_headers(user1),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "total": 1,
+        "allow": 0,
+        "review": 0,
+        "block": 1,
+    }
+
+
+
+def test_analysis_stats_requires_authentication(client):
+    response = client.get("/analyses/stats")
+
+    assert response.status_code == 401

@@ -3,10 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.models.auth_dependencies import get_current_user
 from app.models.dependencies import get_db
-from app.schemas.analysis import AnalysisRecord, AnalysisRequest, AnalysisResponse
+from app.schemas.analysis import (
+    AnalysisRecord,
+    AnalysisRequest,
+    AnalysisResponse,
+    AnalysisStats,
+)
 from app.services.analysis_service import (
     analyze,
     get_analysis_by_id,
+    get_analysis_statistics,
     list_analyses,
 )
 
@@ -43,6 +49,19 @@ def list_analyses_endpoint(
         user_id=user_id,
         limit=limit,
         offset=offset,
+    )
+
+
+@router.get("/analyses/stats", response_model=AnalysisStats)
+def get_analysis_stats_endpoint(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = int(current_user["sub"])
+
+    return get_analysis_statistics(
+        db=db,
+        user_id=user_id,
     )
 
 

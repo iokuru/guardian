@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from app.services.audit_service import create_audit_log
 
@@ -98,3 +98,48 @@ def create_analysis(
     except Exception:
         db.rollback()
         raise
+
+
+def get_analysis_stats(
+    db: Session,
+    user_id: int,
+) -> dict[str, int]:
+    total = db.scalar(
+        select(func.count())
+        .select_from(Analysis)
+        .where(Analysis.user_id == user_id)
+    )
+
+    allow = db.scalar(
+        select(func.count())
+        .select_from(Analysis)
+        .where(
+            Analysis.user_id == user_id,
+            Analysis.decision == "ALLOW",
+        )
+    )
+
+    review = db.scalar(
+        select(func.count())
+        .select_from(Analysis)
+        .where(
+            Analysis.user_id == user_id,
+            Analysis.decision == "REVIEW",
+        )
+    )
+
+    block = db.scalar(
+        select(func.count())
+        .select_from(Analysis)
+        .where(
+            Analysis.user_id == user_id,
+            Analysis.decision == "BLOCK",
+        )
+    )
+
+    return {
+        "total": total or 0,
+        "allow": allow or 0,
+        "review": review or 0,
+        "block": block or 0,
+    }

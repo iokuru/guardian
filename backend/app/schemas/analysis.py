@@ -47,3 +47,11 @@ class AnalysisRecord(BaseModel):
     semantic_model: str
     created_at: datetime
     findings: list[RiskFinding] = Field(default_factory=list)
+
+
+
+class AnalysisStats(BaseModel):
+    total: int
+    allow: int
+    review: int
+    block: int
