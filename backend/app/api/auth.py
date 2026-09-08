@@ -5,6 +5,9 @@ from app.core.rate_limit import is_rate_limited
 from app.models.role_dependencies import require_role
 from app.models.dependencies import get_db
 from app.models.user import User
+
+from app.models.auth_dependencies import get_current_user
+
 from app.schemas.auth import (
     LoginRequest,
     RegisterRequest,
@@ -94,3 +97,24 @@ def list_users(
     db: Session = Depends(get_db),
 ):
     return db.query(User).order_by(User.id).all()
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
+def get_current_user_info(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = int(current_user["sub"])
+
+    user = db.get(User, user_id)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return user

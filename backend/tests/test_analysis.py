@@ -1483,7 +1483,7 @@ def test_response_contains_request_id():
     assert UUID(request_id)
 
 
-def test_each_request_gets_unique_request_id():
+def test_each_request_gets_unique_request_id(client):
     response_1 = client.get("/health")
     response_2 = client.get("/health")
 
@@ -1491,3 +1491,111 @@ def test_each_request_gets_unique_request_id():
     request_id_2 = response_2.headers["X-Request-ID"]
 
     assert request_id_1 != request_id_2
+
+
+def test_list_analyses_returns_findings(client):
+    # Register
+    client.post(
+        "/auth/register",
+        json={
+            "username": "testuser",
+            "email": "test@example.com",
+            "password": "password123",
+        },
+    )
+
+    # Login
+    login_response = client.post(
+        "/auth/login",
+        json={
+            "username": "testuser",
+            "password": "password123",
+        },
+    )
+
+    token = login_response.json()["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+    }
+
+    # Analyze
+    analyze_response = client.post(
+        "/analyze",
+        headers=headers,
+        json={
+            "action": "Delete all customer records",
+            "context": "Production database",
+        },
+    )
+
+    assert analyze_response.status_code == 200
+
+    # History
+    response = client.get(
+        "/analyses",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert len(data[0]["findings"]) > 0
+    assert data[0]["findings"][0]["category"] == "DESTRUCTIVE"
+
+
+def test_get_analysis_returns_findings(client):
+    client.post(
+        "/auth/register",
+        json={
+            "username": "testuser",
+            "email": "test@example.com",
+            "password": "password123",
+        },
+    )
+
+    login_response = client.post(
+        "/auth/login",
+        json={
+            "username": "testuser",
+            "password": "password123",
+        },
+    )
+
+    token = login_response.json()["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+    }
+
+    client.post(
+        "/analyze",
+        headers=headers,
+        json={
+            "action": "Delete all customer records",
+            "context": "Production database",
+        },
+    )
+
+    analyses_response = client.get(
+        "/analyses",
+        headers=headers,
+    )
+
+    analysis_id = analyses_response.json()[0]["id"]
+
+    response = client.get(
+        f"/analyses/{analysis_id}",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == analysis_id
+    assert len(data["findings"]) > 0
+
+

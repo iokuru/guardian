@@ -389,3 +389,49 @@ def test_login_rate_limit(client):
     assert response.status_code == 429
     assert response.json()["detail"] == "Too many login attempts"
     assert response.headers["Retry-After"] == "60"
+
+
+def test_get_current_user(client):
+    register_response = client.post(
+        "/auth/register",
+        json={
+            "username": "testuser",
+            "email": "test@example.com",
+            "password": "password123",
+        },
+    )
+
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/auth/login",
+        json={
+            "username": "testuser",
+            "password": "password123",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    token = login_response.json()["access_token"]
+
+    response = client.get(
+        "/auth/me",
+        headers={
+            "Authorization": f"Bearer {token}",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["username"] == "testuser"
+    assert data["email"] == "test@example.com"
+    assert data["role"] == "ANALYST"
+
+
+def test_get_current_user_requires_authentication(client):
+    response = client.get("/auth/me")
+
+    assert response.status_code == 401
