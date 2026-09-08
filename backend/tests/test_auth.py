@@ -1,19 +1,28 @@
+from datetime import datetime, timedelta, timezone
+import jwt
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.core.security import decode_access_token
+from app.core.rate_limit import reset_rate_limit
+from app.core.security import (
+    ALGORITHM,
+    SECRET_KEY,
+    create_access_token,
+    decode_access_token,
+)
 from app.main import app
 from app.models.database import Base
 from app.models.dependencies import get_db
 
-import jwt
-from datetime import datetime, timedelta, timezone
 
-from app.core.security import create_access_token
-
-from app.core.security import SECRET_KEY, ALGORITHM
+@pytest.fixture(autouse=True)
+def reset_rate_limit_state():
+    reset_rate_limit()
+    yield
+    reset_rate_limit()
 
 test_engine = create_engine(
     "sqlite:///:memory:",
@@ -356,3 +365,27 @@ def create_user(db, role="ANALYST"):
     db.refresh(user)
     return user
 
+
+def test_login_rate_limit(client):
+    for _ in range(5):
+        response = client.post(
+            "/auth/login",
+            json={
+                "username": "nonexistent",
+                "password": "password123",
+            },
+        )
+
+        assert response.status_code == 401
+
+    response = client.post(
+        "/auth/login",
+        json={
+            "username": "nonexistent",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 429
+    assert response.json()["detail"] == "Too many login attempts"
+    assert response.headers["Retry-After"] == "60"
