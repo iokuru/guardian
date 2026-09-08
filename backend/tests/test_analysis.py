@@ -68,6 +68,59 @@ client.headers.update(
     {"Authorization": f"Bearer {test_token}"}
 )
 
+
+def create_user(db, username=None, email=None, password="password123", role="ANALYST"):
+    import uuid
+
+    username = username or f"user_{uuid.uuid4().hex[:8]}"
+    email = email or f"{username}@example.com"
+
+    user = User(
+        username=username,
+        email=email,
+        hashed_password=hash_password(password),
+        role=role,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def create_analysis_record(
+    db,
+    user_id,
+    action,
+    context="Production database",
+    decision="BLOCK",
+    risk_score=1.0,
+    risk_level="CRITICAL",
+    policy_version="1.0",
+    detector_version="1.0",
+    semantic_model="all-MiniLM-L6-v2",
+):
+    analysis = Analysis(
+        user_id=user_id,
+        action=action,
+        context=context,
+        decision=decision,
+        risk_score=risk_score,
+        risk_level=risk_level,
+        policy_version=policy_version,
+        detector_version=detector_version,
+        semantic_model=semantic_model,
+    )
+    db.add(analysis)
+    db.commit()
+    db.refresh(analysis)
+    return analysis
+
+
+def get_auth_headers(user):
+    token = create_access_token(user.id, user.role)
+    return {"Authorization": f"Bearer {token}"}
+
+
 def test_health():
     response = client.get("/health")
 
@@ -1299,3 +1352,36 @@ def test_analyze_returns_audit_metadata():
     assert data["policy_version"] == "1.0"
     assert data["detector_version"] == "1.0"
     assert data["semantic_model"] == "all-MiniLM-L6-v2"
+
+
+def test_list_analyses_with_offset(client, db):
+    user = create_user(db)
+
+    for i in range(3):
+        create_analysis_record(
+            db,
+            user.id,
+            f"Action {i}",
+        )
+
+    response = client.get(
+        "/analyses?limit=2&offset=1",
+        headers=get_auth_headers(user),
+    )
+
+    assert response.status_code == 200
+
+    records = response.json()
+
+    assert len(records) == 2
+
+
+def test_list_analyses_rejects_negative_offset(client, db):
+    user = create_user(db)
+
+    response = client.get(
+        "/analyses?offset=-1",
+        headers=get_auth_headers(user),
+    )
+
+    assert response.status_code == 422

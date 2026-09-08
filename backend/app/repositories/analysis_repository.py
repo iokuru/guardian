@@ -17,12 +17,14 @@ def get_analyses(
     db: Session,
     user_id: int,
     limit: int = 50,
+    offset: int = 0,
 ) -> list[Analysis]:
     return list(
         db.scalars(
             select(Analysis)
             .where(Analysis.user_id == user_id)
             .order_by(Analysis.created_at.desc())
+            .offset(offset)
             .limit(limit)
         )
     )

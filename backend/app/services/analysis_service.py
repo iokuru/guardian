@@ -13,8 +13,14 @@ def list_analyses(
     db: Session,
     user_id: int,
     limit: int = 50,
+    offset: int = 0,
 ):
-    return get_analyses(db, user_id, limit)
+    return get_analyses(
+        db,
+        user_id,
+        limit,
+        offset,
+    )
 
 
 def get_analysis_by_id(

@@ -32,6 +32,7 @@ def analyze_endpoint(
 @router.get("/analyses", response_model=list[AnalysisRecord])
 def list_analyses_endpoint(
     limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -41,6 +42,7 @@ def list_analyses_endpoint(
         db=db,
         user_id=user_id,
         limit=limit,
+        offset=offset,
     )
 
 
