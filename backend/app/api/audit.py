@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-
+from app.core.decision_types import RiskDecision, RiskLevel
 from app.models.auth_dependencies import get_current_user
 from app.models.dependencies import get_db
 from app.schemas.audit import AuditLogResponse
@@ -17,6 +17,8 @@ router = APIRouter(
 )
 def get_audit_logs_endpoint(
     limit: int = Query(default=50, ge=1, le=100),
+    decision: RiskDecision | None = Query(default=None),
+    risk_level: RiskLevel | None = Query(default=None),
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
@@ -28,4 +30,6 @@ def get_audit_logs_endpoint(
         user_id=user_id,
         is_admin=is_admin,
         limit=limit,
+        decision=decision,
+        risk_level=risk_level,
     )

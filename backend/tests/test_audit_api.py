@@ -128,3 +128,157 @@ def test_audit_logs_limit(client, db):
 
     assert response.status_code == 200
     assert len(response.json()) == 2
+
+
+def test_filter_audit_logs_by_decision(client, db):
+    user = create_user(
+        db,
+        "decisionuser",
+        "decision@example.com",
+    )
+
+    create_audit(
+        db,
+        user.id,
+        1,
+        "Blocked action",
+    )
+
+    log = AuditLog(
+        user_id=user.id,
+        analysis_id=2,
+        action="Allowed action",
+        decision="ALLOW",
+        risk_score=0.1,
+        risk_level="LOW",
+        policy_version="1.0",
+        detector_version="1.0",
+        semantic_model="all-MiniLM-L6-v2",
+    )
+    db.add(log)
+    db.commit()
+
+    response = client.get(
+        "/audit-logs?decision=BLOCK",
+        headers=get_headers(user),
+    )
+
+    assert response.status_code == 200
+
+    logs = response.json()
+
+    assert len(logs) == 1
+    assert logs[0]["decision"] == "BLOCK"
+
+
+def test_filter_audit_logs_by_risk_level(client, db):
+    user = create_user(
+        db,
+        "riskuser",
+        "risk@example.com",
+    )
+
+    create_audit(
+        db,
+        user.id,
+        1,
+        "Critical action",
+    )
+
+    log = AuditLog(
+        user_id=user.id,
+        analysis_id=2,
+        action="Low risk action",
+        decision="ALLOW",
+        risk_score=0.1,
+        risk_level="LOW",
+        policy_version="1.0",
+        detector_version="1.0",
+        semantic_model="all-MiniLM-L6-v2",
+    )
+    db.add(log)
+    db.commit()
+
+    response = client.get(
+        "/audit-logs?risk_level=CRITICAL",
+        headers=get_headers(user),
+    )
+
+    assert response.status_code == 200
+
+    logs = response.json()
+
+    assert len(logs) == 1
+    assert logs[0]["risk_level"] == "CRITICAL"
+
+
+def test_filter_audit_logs_by_decision_and_risk_level(client, db):
+    user = create_user(
+        db,
+        "combineduser",
+        "combined@example.com",
+    )
+
+    create_audit(
+        db,
+        user.id,
+        1,
+        "Blocked critical action",
+    )
+
+    log = AuditLog(
+        user_id=user.id,
+        analysis_id=2,
+        action="Review action",
+        decision="REVIEW",
+        risk_score=0.6,
+        risk_level="HIGH",
+        policy_version="1.0",
+        detector_version="1.0",
+        semantic_model="all-MiniLM-L6-v2",
+    )
+    db.add(log)
+    db.commit()
+
+    response = client.get(
+        "/audit-logs?decision=BLOCK&risk_level=CRITICAL",
+        headers=get_headers(user),
+    )
+
+    assert response.status_code == 200
+
+    logs = response.json()
+
+    assert len(logs) == 1
+    assert logs[0]["decision"] == "BLOCK"
+    assert logs[0]["risk_level"] == "CRITICAL"
+
+
+def test_invalid_decision_filter_returns_422(client, db):
+    user = create_user(
+        db,
+        "invaliddecision",
+        "invaliddecision@example.com",
+    )
+
+    response = client.get(
+        "/audit-logs?decision=INVALID",
+        headers=get_headers(user),
+    )
+
+    assert response.status_code == 422
+
+
+def test_invalid_risk_level_filter_returns_422(client, db):
+    user = create_user(
+        db,
+        "invalidrisk",
+        "invalidrisk@example.com",
+    )
+
+    response = client.get(
+        "/audit-logs?risk_level=INVALID",
+        headers=get_headers(user),
+    )
+
+    assert response.status_code == 422
