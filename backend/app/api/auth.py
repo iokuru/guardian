@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
+from app.models.role_dependencies import require_role
 from app.models.dependencies import get_db
+from app.models.user import User
 from app.schemas.auth import (
     LoginRequest,
     RegisterRequest,
@@ -63,3 +64,14 @@ def login(
         )
 
     return TokenResponse(access_token=token)
+
+
+@router.get(
+    "/users",
+    response_model=list[UserResponse],
+)
+def list_users(
+    current_user: dict = Depends(require_role("ADMIN")),
+    db: Session = Depends(get_db),
+):
+    return db.query(User).order_by(User.id).all()
