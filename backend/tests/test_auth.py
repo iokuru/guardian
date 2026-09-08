@@ -191,3 +191,29 @@ def test_analyze_rejects_invalid_token():
     )
 
     assert response.status_code == 401
+
+
+def test_register_rejects_invalid_email(client):
+    response = client.post(
+        "/auth/register",
+        json={
+            "username": "invalidemail",
+            "email": "not-an-email",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_register_rejects_blank_email(client):
+    response = client.post(
+        "/auth/register",
+        json={
+            "username": "blankemail",
+            "email": "",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 422
