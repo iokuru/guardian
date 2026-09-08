@@ -16,6 +16,8 @@ from app.core.risk_types import FindingSource, RiskCategory
 from app.core.security import create_access_token, hash_password
 from app.schemas.risk import RiskFinding
 
+from uuid import UUID
+
 
 test_engine = create_engine(
     "sqlite:///:memory:",
@@ -1387,7 +1389,6 @@ def test_list_analyses_rejects_negative_offset(client, db):
     assert response.status_code == 422
 
 
-
 def test_analysis_stats(client, db):
     user = create_user(db)
 
@@ -1432,7 +1433,6 @@ def test_analysis_stats(client, db):
     }
 
 
-
 def test_analysis_stats_are_user_scoped(client, db):
     user1 = create_user(db)
     user2 = create_user(db)
@@ -1467,8 +1467,27 @@ def test_analysis_stats_are_user_scoped(client, db):
     }
 
 
-
 def test_analysis_stats_requires_authentication(client):
     response = client.get("/analyses/stats")
 
     assert response.status_code == 401
+
+
+def test_response_contains_request_id():
+    response = client.get("/health")
+
+    assert response.status_code == 200
+
+    request_id = response.headers["X-Request-ID"]
+
+    assert UUID(request_id)
+
+
+def test_each_request_gets_unique_request_id():
+    response_1 = client.get("/health")
+    response_2 = client.get("/health")
+
+    request_id_1 = response_1.headers["X-Request-ID"]
+    request_id_2 = response_2.headers["X-Request-ID"]
+
+    assert request_id_1 != request_id_2
