@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-
+from app.models.auth_dependencies import get_current_user
 from app.models.dependencies import get_db
 from app.schemas.analysis import (
     AnalysisRecord,
@@ -19,6 +19,7 @@ router = APIRouter()
 def analyze_endpoint(
     request: AnalysisRequest,
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     return analyze(
         request.action,

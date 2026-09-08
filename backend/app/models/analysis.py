@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
-
 from sqlalchemy import DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.models.database import Base
+from app.models.auth_dependencies import get_current_user
 
 if TYPE_CHECKING:
     from app.models.finding import Finding
