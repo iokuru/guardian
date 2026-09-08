@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
+
 from app.api.auth import router as auth_router
 from app.api.analysis import router as analysis_router
 from app.api.audit import router as audit_router
+
 
 app = FastAPI(title="GUARDIAN")
 
@@ -15,7 +17,7 @@ async def sqlalchemy_exception_handler(
 ):
     return JSONResponse(
         status_code=500,
-        content={"detail": "Analysis could not be persisted"},
+        content={"detail": "Database operation failed"},
     )
 
 

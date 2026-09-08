@@ -1332,7 +1332,7 @@ def test_analyze_returns_500_when_persistence_fails(monkeypatch):
 
     assert response.status_code == 500
     assert response.json() == {
-        "detail": "Analysis could not be persisted"
+        "detail": "Database operation failed"
     }
 
 
