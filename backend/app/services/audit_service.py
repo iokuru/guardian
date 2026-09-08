@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.audit_log import AuditLog
+from app.repositories.audit_repository import get_audit_logs
 from app.schemas.analysis import AnalysisResponse
 
 
@@ -24,7 +25,20 @@ def create_audit_log(
     )
 
     db.add(audit_log)
-    db.commit()
-    db.refresh(audit_log)
+    db.flush()
 
     return audit_log
+
+
+def list_audit_logs(
+    db: Session,
+    user_id: int,
+    is_admin: bool,
+    limit: int = 50,
+):
+    return get_audit_logs(
+        db=db,
+        user_id=user_id,
+        is_admin=is_admin,
+        limit=limit,
+    )

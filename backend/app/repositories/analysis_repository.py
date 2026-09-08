@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.models.audit_log import AuditLog
+from app.services.audit_service import create_audit_log
 
 from app.core.versions import (
     POLICY_VERSION,
@@ -80,18 +80,12 @@ def create_analysis(
                 )
             )
 
-        db.add(
-            AuditLog(
-                user_id=user_id,
-                analysis_id=analysis.id,
-                action=action,
-                decision=result.decision.value,
-                risk_score=result.risk_score,
-                risk_level=result.risk_level.value,
-                policy_version=result.policy_version,
-                detector_version=result.detector_version,
-                semantic_model=result.semantic_model,
-            )
+        create_audit_log(
+            db=db,
+            user_id=user_id,
+            analysis_id=analysis.id,
+            action=action,
+            result=result,
         )
 
         db.commit()
