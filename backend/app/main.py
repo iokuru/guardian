@@ -8,9 +8,17 @@ from app.api.auth import router as auth_router
 from app.api.analysis import router as analysis_router
 from app.api.audit import router as audit_router
 
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="GUARDIAN")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):
