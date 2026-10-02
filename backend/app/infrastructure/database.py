@@ -10,7 +10,10 @@ DATABASE_URL = os.getenv(
     "postgresql://guardian:guardian@localhost:5432/guardian",
 )
 
-engine = create_engine(DATABASE_URL)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(
     bind=engine,

@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from fastapi import FastAPI, Request
@@ -19,9 +20,12 @@ app = FastAPI(
     version="2.0.0",
 )
 
+cors_env = os.getenv("CORS_ORIGINS", "*")
+allowed_origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()] or ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
