@@ -15,10 +15,12 @@ from app.services.risk_engine import analyze_risk
 def get_analysis_statistics(
     db: Session,
     user_id: int,
+    workspace_id: int | None = None,
 ):
     return get_analysis_stats(
         db=db,
         user_id=user_id,
+        workspace_id=workspace_id,
     )
 
 

@@ -76,10 +76,12 @@ def get_analysis_stats_endpoint(
     db: Session = Depends(get_db),
 ):
     user_id = int(current_user["sub"])
+    workspace_id = current_user.get("workspace_id", 1) or 1
 
     return get_analysis_statistics(
         db=db,
         user_id=user_id,
+        workspace_id=workspace_id,
     )
 
 

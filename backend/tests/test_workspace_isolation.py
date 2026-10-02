@@ -38,16 +38,17 @@ def test_analyses_and_findings_workspace_isolation(client, db):
     data_a = resp_a.json()
     analysis_id = data_a["analysis_id"]
 
-    # User in Workspace 2 cannot read Workspace 1 analysis
     get_b = client.get(f"/analyses/{analysis_id}", headers=headers_b)
     assert get_b.status_code == 404
     assert get_b.json()["detail"] == "Analysis not found"
 
-    # User in Workspace 2 list does not include Workspace 1 analyses
     list_b = client.get("/analyses", headers=headers_b)
     assert list_b.status_code == 200
     ids_b = [item["id"] for item in list_b.json()]
     assert analysis_id not in ids_b
+
+    stats_b = client.get("/analyses/stats", headers=headers_b).json()
+    assert stats_b["total"] == 0
 
 
 def test_reviews_and_decisions_workspace_isolation(client, db):

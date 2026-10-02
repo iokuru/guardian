@@ -63,7 +63,7 @@ function App() {
       if (statsRes.status === "fulfilled") {
         setStats(statsRes.value);
       }
-      if (analysesRes.status === "fulfilled" && analysesRes.value.length > 0) {
+      if (analysesRes.status === "fulfilled") {
         setAnalyses(analysesRes.value);
       }
       if (revStatsRes.status === "fulfilled") {

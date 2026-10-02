@@ -148,18 +148,23 @@ def create_analysis(
 def get_analysis_stats(
     db: Session,
     user_id: int,
+    workspace_id: int | None = None,
 ) -> dict[str, int]:
+    base_filter = [Analysis.user_id == user_id]
+    if workspace_id is not None:
+        base_filter.append(Analysis.workspace_id == workspace_id)
+
     total = db.scalar(
         select(func.count())
         .select_from(Analysis)
-        .where(Analysis.user_id == user_id)
+        .where(*base_filter)
     )
 
     allow = db.scalar(
         select(func.count())
         .select_from(Analysis)
         .where(
-            Analysis.user_id == user_id,
+            *base_filter,
             Analysis.decision == "ALLOW",
         )
     )
@@ -168,7 +173,7 @@ def get_analysis_stats(
         select(func.count())
         .select_from(Analysis)
         .where(
-            Analysis.user_id == user_id,
+            *base_filter,
             Analysis.decision == "REVIEW",
         )
     )
@@ -177,7 +182,7 @@ def get_analysis_stats(
         select(func.count())
         .select_from(Analysis)
         .where(
-            Analysis.user_id == user_id,
+            *base_filter,
             Analysis.decision == "BLOCK",
         )
     )
