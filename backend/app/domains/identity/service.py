@@ -99,3 +99,21 @@ def revoke_api_key(db: Session, user_id: int, key_id: int) -> bool:
     api_key.revoked_at = datetime.utcnow()
     db.commit()
     return True
+
+
+def authenticate_api_key(db: Session, raw_key: str) -> ApiKey | None:
+    if not raw_key or not raw_key.startswith("gdn_"):
+        return None
+    prefix = raw_key[:10]
+    candidates = list(
+        db.scalars(
+            select(ApiKey).where(
+                ApiKey.prefix == prefix,
+                ApiKey.revoked_at.is_(None),
+            )
+        )
+    )
+    for record in candidates:
+        if verify_password(raw_key, record.hashed_key):
+            return record
+    return None
