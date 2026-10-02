@@ -1,10 +1,20 @@
-export type Decision = "ALLOW" | "REVIEW" | "BLOCK";
+export type Decision = "allow" | "review" | "block" | "ALLOW" | "REVIEW" | "BLOCK";
 
-export type RiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type RiskLevel = "low" | "medium" | "high" | "critical" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
-export type FindingSource = "ACTION" | "CONTEXT" | "SCOPE" | "MODEL";
+export type FindingSource = "action" | "context" | "scope" | "model" | "ACTION" | "CONTEXT" | "SCOPE" | "MODEL";
 
 export type RiskCategory =
+  | "destructive"
+  | "privilege_escalation"
+  | "credential_access"
+  | "data_exfiltration"
+  | "production"
+  | "customer_data"
+  | "financial_data"
+  | "employee_data"
+  | "database"
+  | "temporary_files"
   | "DESTRUCTIVE"
   | "PRIVILEGE_ESCALATION"
   | "CREDENTIAL_ACCESS"
@@ -79,7 +89,7 @@ export interface ReviewRecord {
   request_id: string;
   workspace_id?: number;
   analysis_id: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "pending" | "approved" | "rejected" | "PENDING" | "APPROVED" | "REJECTED";
   assigned_to?: number | null;
   reviewed_by?: number | null;
   resolution_notes?: string | null;
