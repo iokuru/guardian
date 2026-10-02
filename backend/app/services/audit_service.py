@@ -11,10 +11,16 @@ def create_audit_log(
     analysis_id: int,
     action: str,
     result: AnalysisResponse,
+    request_id: str | None = None,
+    workspace_id: int = 1,
+    actor_name: str | None = None,
 ) -> AuditLog:
     audit_log = AuditLog(
+        request_id=request_id or getattr(result, "request_id", None),
+        workspace_id=workspace_id,
         user_id=user_id,
         analysis_id=analysis_id,
+        actor_name=actor_name,
         action=action,
         decision=result.decision.value,
         risk_score=result.risk_score,

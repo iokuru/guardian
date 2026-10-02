@@ -120,6 +120,9 @@ def create_analysis(
             analysis_id=analysis.id,
             action=action,
             result=result,
+            request_id=req_id,
+            workspace_id=workspace_id,
+            actor_name=agent_id or f"User #{user_id}",
         )
 
         db.commit()
