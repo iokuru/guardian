@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from app.services.audit_service import create_audit_log
@@ -9,6 +10,7 @@ from app.core.versions import (
 )
 from app.models.analysis import Analysis
 from app.models.finding import Finding
+from app.domains.decisions.models import Decision, Review
 from app.schemas.analysis import AnalysisResponse
 from app.services.severity import get_risk_severity
 
@@ -49,10 +51,18 @@ def create_analysis(
     context: str,
     result: AnalysisResponse,
     user_id: int,
+    request_id: str | None = None,
+    agent_id: str | None = None,
+    workspace_id: int = 1,
 ) -> Analysis:
     try:
+        req_id = request_id or f"req_{uuid.uuid4().hex[:8]}"
+
         analysis = Analysis(
+            request_id=req_id,
+            workspace_id=workspace_id,
             user_id=user_id,
+            agent_id=agent_id,
             action=action,
             context=context,
             decision=result.decision.value,
@@ -81,6 +91,28 @@ def create_analysis(
                     source=finding.source.value,
                 )
             )
+
+        # Record separated Automated Decision
+        decision_record = Decision(
+            request_id=req_id,
+            workspace_id=workspace_id,
+            type="AUTOMATED",
+            outcome=result.decision.value,
+            reason=result.decision_reason,
+            decided_by="system",
+            source="policy_engine",
+        )
+        db.add(decision_record)
+
+        # If decision is REVIEW, automatically queue into human review queue
+        if result.decision.value == "REVIEW":
+            review_item = Review(
+                request_id=req_id,
+                workspace_id=workspace_id,
+                analysis_id=analysis.id,
+                status="PENDING",
+            )
+            db.add(review_item)
 
         create_audit_log(
             db=db,

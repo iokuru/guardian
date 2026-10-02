@@ -8,13 +8,15 @@ from app.schemas.risk import RiskFinding
 class AnalysisRequest(BaseModel):
     action: str = Field(min_length=1, max_length=1000)
     context: str = Field(min_length=1, max_length=2000)
+    agent_id: str | None = None
+    environment: str | None = "Production"
+    request_id: str | None = None
 
     @field_validator("action", "context")
     @classmethod
     def validate_not_blank(cls, value: str) -> str:
         if not value.strip():
             raise ValueError("must not be blank")
-
         return value
 
 
@@ -30,13 +32,18 @@ class AnalysisResponse(BaseModel):
     policy_version: str
     detector_version: str
     semantic_model: str
-    
+    request_id: str | None = None
+    analysis_id: int | None = None
+    review_id: int | None = None
 
 
 class AnalysisRecord(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    request_id: str | None = None
+    workspace_id: int | None = 1
+    agent_id: str | None = None
     action: str
     context: str
     decision: RiskDecision
@@ -47,7 +54,6 @@ class AnalysisRecord(BaseModel):
     semantic_model: str
     created_at: datetime
     findings: list[RiskFinding] = Field(default_factory=list)
-
 
 
 class AnalysisStats(BaseModel):

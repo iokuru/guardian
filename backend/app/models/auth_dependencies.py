@@ -8,6 +8,19 @@ from app.models.user import User
 
 security = HTTPBearer()
 
+ALLOWED_ROLES = {
+    "ANALYST",
+    "ADMIN",
+    "Reviewer",
+    "Developer",
+    "Owner",
+    "Admin",
+    "analyst",
+    "admin",
+    "reviewer",
+    "developer",
+}
+
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -26,11 +39,10 @@ def get_current_user(
         if user_id <= 0:
             raise ValueError("Invalid user ID")
 
-        if role not in {"ANALYST", "ADMIN"}:
+        if role not in ALLOWED_ROLES and role.upper() not in {"ANALYST", "ADMIN"}:
             raise ValueError("Invalid role")
 
         payload["sub"] = str(user_id)
-
         return payload
 
     except Exception:
