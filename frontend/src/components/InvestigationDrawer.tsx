@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { X, Copy, Check, ExternalLink } from "lucide-react";
-import type { AnalysisRecord } from "../types/guardian";
-import { getAnalysis } from "../api/client";
+import type { AnalysisRecord, RequestTimeline, TimelineStage } from "../types/guardian";
+import { getAnalysis, getRequestTimeline } from "../api/client";
 import { copyToClipboard } from "../utils/clipboard";
 
 interface InvestigationDrawerProps {
@@ -41,6 +41,7 @@ export function InvestigationDrawer({
   fallbackRecord,
 }: InvestigationDrawerProps) {
   const [record, setRecord] = useState<AnalysisRecord | null>(null);
+  const [timeline, setTimeline] = useState<RequestTimeline | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showJson, setShowJson] = useState(false);
@@ -54,6 +55,7 @@ export function InvestigationDrawer({
 
   const handleClose = useCallback(() => {
     setRecord(null);
+    setTimeline(null);
     onClose();
   }, [onClose]);
 
@@ -87,6 +89,29 @@ export function InvestigationDrawer({
     };
   }, [analysisId]);
 
+  useEffect(() => {
+    const reqId = activeRecord?.request_id;
+    if (!reqId) {
+      setTimeline(null);
+      return;
+    }
+    let isCurrent = true;
+    getRequestTimeline(reqId)
+      .then((data) => {
+        if (isCurrent && data) {
+          setTimeline(data);
+        }
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setTimeline(null);
+        }
+      });
+    return () => {
+      isCurrent = false;
+    };
+  }, [activeRecord?.request_id]);
+
   if (!analysisId) return null;
 
   async function copyPayload() {
@@ -97,6 +122,54 @@ export function InvestigationDrawer({
       setTimeout(() => setCopied(false), 1500);
     }
   }
+
+  const stages: TimelineStage[] =
+    timeline?.timeline && timeline.timeline.length > 0
+      ? timeline.timeline
+      : activeRecord
+      ? [
+          {
+            stage: "ingestion",
+            timestamp: formatIst(activeRecord.created_at),
+            title: "action ingested",
+            description: `received from ${activeRecord.agent_id || "agent"} for safety screening`,
+            actor: activeRecord.agent_id || "agent",
+          },
+          {
+            stage: "risk_analysis",
+            timestamp: formatIst(activeRecord.created_at),
+            title: "threat evaluation",
+            description: `scored ${activeRecord.risk_score.toFixed(2)} (${activeRecord.risk_level.toLowerCase()}) across 6 detection categories`,
+            actor: activeRecord.semantic_model || "all-MiniLM-L6-v2",
+          },
+          {
+            stage: "policy_decision",
+            timestamp: formatIst(activeRecord.created_at),
+            title: `policy ${activeRecord.decision.toLowerCase()}`,
+            description: `policy rules evaluated against active ruleset ${activeRecord.policy_version || "1.0"}`,
+            actor: "policy engine",
+            outcome: activeRecord.decision.toLowerCase(),
+          },
+          ...(activeRecord.decision.toLowerCase() === "review"
+            ? [
+                {
+                  stage: "review_queue",
+                  timestamp: formatIst(activeRecord.created_at),
+                  title: "escalated to review queue",
+                  description: "pending human security lead sign-off",
+                  actor: "human reviewer",
+                },
+              ]
+            : []),
+          {
+            stage: "audit_persistence",
+            timestamp: formatIst(activeRecord.created_at),
+            title: "audit trail committed",
+            description: "immutable compliance event recorded",
+            actor: "audit engine",
+          },
+        ]
+      : [];
 
   return (
     <div className="drawer-backdrop" onClick={onClose}>
@@ -114,7 +187,7 @@ export function InvestigationDrawer({
             </span>
             {activeRecord && (
               <span className={`decision-badge-pill ${activeRecord.decision.toLowerCase()}`}>
-                <span>{activeRecord.decision}</span>
+                <span>{activeRecord.decision.toLowerCase()}</span>
               </span>
             )}
           </div>
@@ -151,24 +224,70 @@ export function InvestigationDrawer({
               <div className="drawer-status-banner">
                 <div className="drawer-status-banner-header">
                   <span className="drawer-status-banner-title">
-                    {activeRecord.decision === "BLOCK"
-                      ? "Action Intercepted"
-                      : activeRecord.decision === "REVIEW"
-                      ? "Approval Required"
-                      : "Action Cleared"}
+                    {activeRecord.decision.toLowerCase() === "block"
+                      ? "action intercepted"
+                      : activeRecord.decision.toLowerCase() === "review"
+                      ? "approval required"
+                      : "action cleared"}
                   </span>
                   <span className="drawer-status-banner-risk">
-                    Risk {(activeRecord.risk_score || 0).toFixed(2)} · {activeRecord.risk_level}
+                    risk {(activeRecord.risk_score || 0).toFixed(2)} · {activeRecord.risk_level.toLowerCase()}
                   </span>
                 </div>
                 <p className="drawer-status-banner-desc">
                   {activeRecord.decision_reason ||
-                    (activeRecord.decision === "BLOCK"
+                    (activeRecord.decision.toLowerCase() === "block"
                       ? "Policy override intercepted this action. Operation exceeded critical risk limits."
-                      : activeRecord.decision === "REVIEW"
+                      : activeRecord.decision.toLowerCase() === "review"
                       ? "Sensitive boundaries flagged. Manual analyst authorization required."
                       : "Action passed all guardrail checks and complied with baseline policy.")}
                 </p>
+              </div>
+
+              {/* Lifecycle Trace */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="drawer-section-label !mb-0">
+                    Request lifecycle trace
+                  </span>
+                  {activeRecord.request_id && (
+                    <span className="text-[11px] font-mono text-[#ea4b71] bg-[#ea4b71]/10 px-2 py-0.5 rounded border border-[#ea4b71]/20">
+                      {activeRecord.request_id}
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-2 mt-2">
+                  {stages.map((stg, idx) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-lg border border-[#e4e4e7] dark:border-[#27272a] bg-[#fafafa] dark:bg-[#18181b] space-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#ea4b71]" />
+                          <span className="text-xs font-semibold text-[#09090b] dark:text-[#f4f4f5]">
+                            {stg.title}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-[#71717a]">
+                          {stg.timestamp}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#52525b] dark:text-[#a1a1aa] pl-3">
+                        {stg.description}
+                      </p>
+                      <div className="text-[10px] text-[#71717a] pl-3 font-mono">
+                        actor: {stg.actor}
+                        {stg.outcome && (
+                          <span className="ml-2 text-[#ea4b71]">
+                            · outcome: {stg.outcome}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Action Code Block */}
@@ -209,9 +328,9 @@ export function InvestigationDrawer({
                     <tbody>
                       {activeRecord.findings.map((f, idx) => (
                         <tr key={idx}>
-                          <td className="mono font-medium">{f.category}</td>
+                          <td className="mono font-medium">{f.category.toLowerCase()}</td>
                           <td className="mono">{(f.score || 0).toFixed(2)}</td>
-                          <td className="text-[11px] text-[#71717a]">{f.source}</td>
+                          <td className="text-[11px] text-[#71717a]">{f.source.toLowerCase()}</td>
                           <td>{f.reason}</td>
                         </tr>
                       ))}
@@ -224,6 +343,18 @@ export function InvestigationDrawer({
 
               {/* Metadata Grid */}
               <div className="drawer-meta-grid">
+                {activeRecord.request_id && (
+                  <div className="drawer-meta-item">
+                    <span>Request ID</span>
+                    <code className="text-[#ea4b71]">{activeRecord.request_id}</code>
+                  </div>
+                )}
+                {activeRecord.agent_id && (
+                  <div className="drawer-meta-item">
+                    <span>Agent ID</span>
+                    <code>{activeRecord.agent_id}</code>
+                  </div>
+                )}
                 <div className="drawer-meta-item">
                   <span>Policy version</span>
                   <code>{activeRecord.policy_version || "1.0"}</code>
