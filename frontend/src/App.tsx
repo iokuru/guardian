@@ -8,6 +8,7 @@ import { Analyze } from "./pages/Analyze";
 import { Reviews } from "./pages/Reviews";
 import { AuditLogs } from "./pages/AuditLogs";
 import { Governance } from "./pages/Governance";
+import { Integrations } from "./pages/Integrations";
 import { SystemViews } from "./pages/SystemViews";
 import { Sidebar } from "./components/Sidebar";
 import { Topbar } from "./components/Topbar";
@@ -233,8 +234,10 @@ function App() {
             <Governance view={route} />
           )}
 
-          {(route === "integrations" || route === "api" || route === "engine" || route === "models" || route === "users" || route === "access" || route === "status") && (
-            <SystemViews view={route === "integrations" ? "api" : route === "users" || route === "access" ? "status" : route} />
+          {route === "integrations" && <Integrations />}
+
+          {(route === "api" || route === "engine" || route === "models" || route === "users" || route === "access" || route === "status") && (
+            <SystemViews view={route === "users" || route === "access" ? "status" : route} />
           )}
         </main>
       </div>
