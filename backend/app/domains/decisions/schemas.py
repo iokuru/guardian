@@ -34,6 +34,7 @@ class ReviewAnalysisDetails(BaseModel):
     request_id: str
     action: str
     context: str
+    decision: str | None = None
     risk_score: float
     risk_level: str
     policy_version: str

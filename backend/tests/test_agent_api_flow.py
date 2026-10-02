@@ -77,3 +77,90 @@ def test_agent_api_key_authentication_and_three_decision_paths(client, db):
     assert review_data["decision"].lower() == "review"
     assert review_data["review_id"] is not None
     assert review_data["request_id"].startswith("req_")
+
+
+def test_review_approve_and_reject_lifecycle(client, db):
+    from app.core.security import create_access_token
+
+    # 1. Setup agent credential and human reviewer account
+    agent_owner, api_key = create_agent_service_account(db, "agent_owner_2")
+    reviewer = User(
+        username="lead_reviewer",
+        email="lead_reviewer@example.com",
+        hashed_password=hash_password("revpass123"),
+        role="Reviewer",
+    )
+    db.add(reviewer)
+    db.commit()
+    db.refresh(reviewer)
+
+    reviewer_headers = {
+        "Authorization": f"Bearer {create_access_token(reviewer.id, reviewer.role)}"
+    }
+    agent_headers = {"Authorization": f"Bearer {api_key}"}
+
+    # 2. Agent triggers review path for action A
+    res_a = client.post(
+        "/analysis",
+        headers=agent_headers,
+        json={
+            "action": "grant admin permissions to dev team",
+            "context": "Staging cluster",
+            "agent_id": "access-broker-agent",
+        },
+    )
+    assert res_a.status_code == 200
+    data_a = res_a.json()
+    assert data_a["decision"].lower() == "review"
+    review_a_id = data_a["review_id"]
+    analysis_a_id = data_a["analysis_id"]
+
+    # Human reviewer inspects review item
+    rev_get = client.get(f"/reviews/{review_a_id}", headers=reviewer_headers)
+    assert rev_get.status_code == 200
+    assert rev_get.json()["status"] == "PENDING"
+
+    # Human reviewer approves review A
+    appr_res = client.post(
+        f"/reviews/{review_a_id}/approve",
+        headers=reviewer_headers,
+        json={"notes": "Verified by security lead", "reviewer_name": "lead_reviewer"},
+    )
+    assert appr_res.status_code == 200
+    assert appr_res.json()["status"] == "APPROVED"
+
+    # Verify final decision on analysis record is ALLOW
+    analysis_a = client.get(f"/analyses/{analysis_a_id}", headers=agent_headers).json()
+    assert analysis_a["decision"].lower() == "allow"
+    assert appr_res.json()["analysis"]["decision"].lower() == "allow"
+
+    # 3. Agent triggers review path for action B
+    res_b = client.post(
+        "/analysis",
+        headers=agent_headers,
+        json={
+            "action": "sudo access for debug script",
+            "context": "Staging testing environment",
+            "agent_id": "reporting-agent",
+        },
+    )
+    assert res_b.status_code == 200
+    data_b = res_b.json()
+    assert data_b["decision"].lower() == "review"
+    review_b_id = data_b["review_id"]
+    analysis_b_id = data_b["analysis_id"]
+
+    # Human reviewer rejects review B
+    rej_res = client.post(
+        f"/reviews/{review_b_id}/reject",
+        headers=reviewer_headers,
+        json={"notes": "Contractor network prohibited from payroll access", "reviewer_name": "lead_reviewer"},
+    )
+    assert rej_res.status_code == 200
+    assert rej_res.json()["status"] == "REJECTED"
+
+    # Verify final decision on analysis record is BLOCK
+    analysis_b = client.get(f"/analyses/{analysis_b_id}", headers=agent_headers).json()
+    assert analysis_b["decision"].lower() == "block"
+    assert rej_res.json()["analysis"]["decision"].lower() == "block"
+
