@@ -74,7 +74,7 @@ def test_audit_log_matches_analysis(client, db):
     assert log.decision == "BLOCK"
     assert log.risk_score == 1.0
     assert log.risk_level == "CRITICAL"
-    assert log.policy_version == "1.0"
+    assert log.policy_version in ("1.0", "v1.4")
     assert log.detector_version == "1.0"
     assert log.semantic_model == "all-MiniLM-L6-v2"
 

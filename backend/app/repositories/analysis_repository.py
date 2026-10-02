@@ -62,6 +62,11 @@ def create_analysis(
     try:
         req_id = request_id or f"req_{uuid.uuid4().hex[:8]}"
 
+        from app.domains.policies.service import get_active_policy
+
+        active_pol = get_active_policy(db, environment="Production", workspace_id=workspace_id)
+        current_policy_version = active_pol.version if active_pol else POLICY_VERSION
+
         analysis = Analysis(
             request_id=req_id,
             workspace_id=workspace_id,
@@ -72,7 +77,7 @@ def create_analysis(
             decision=result.decision.value,
             risk_score=result.risk_score,
             risk_level=result.risk_level.value,
-            policy_version=POLICY_VERSION,
+            policy_version=current_policy_version,
             detector_version=DETECTOR_VERSION,
             semantic_model=SEMANTIC_MODEL,
         )
@@ -127,6 +132,7 @@ def create_analysis(
             request_id=req_id,
             workspace_id=workspace_id,
             actor_name=agent_id or f"User #{user_id}",
+            policy_version=current_policy_version,
         )
 
         db.commit()

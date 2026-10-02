@@ -14,6 +14,7 @@ def create_audit_log(
     request_id: str | None = None,
     workspace_id: int = 1,
     actor_name: str | None = None,
+    policy_version: str | None = None,
 ) -> AuditLog:
     audit_log = AuditLog(
         request_id=request_id or getattr(result, "request_id", None),
@@ -25,7 +26,7 @@ def create_audit_log(
         decision=result.decision.value,
         risk_score=result.risk_score,
         risk_level=result.risk_level.value,
-        policy_version=result.policy_version,
+        policy_version=policy_version or result.policy_version,
         detector_version=result.detector_version,
         semantic_model=result.semantic_model,
     )
