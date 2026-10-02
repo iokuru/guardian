@@ -130,6 +130,27 @@ def test_health():
     assert response.json() == {"status": "ok"}
 
 
+def test_healthz():
+    response = client.get("/healthz")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_health_ready(client):
+    response = client.get("/health/ready")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready", "database": "connected"}
+
+
+def test_ready_alias(client):
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready", "database": "connected"}
+
+
 def test_production_delete_is_blocked():
     response = client.post(
         "/analyze",

@@ -1,11 +1,14 @@
 import os
 import uuid
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.models.database import get_db
 from app.api.auth import router as auth_router
 from app.api.analysis import router as analysis_router
 from app.api.audit import router as audit_router
@@ -57,8 +60,29 @@ async def sqlalchemy_exception_handler(
 
 
 @app.get("/health")
+@app.get("/healthz")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/health/ready")
+@app.get("/ready")
+def health_ready(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {
+            "status": "ready",
+            "database": "connected",
+        }
+    except Exception as exc:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "status": "unhealthy",
+                "database": "disconnected",
+                "detail": str(exc),
+            },
+        )
 
 
 # Root and v1 routers
