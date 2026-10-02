@@ -8,8 +8,8 @@ class DecisionResponse(BaseModel):
     id: int
     request_id: str
     workspace_id: int | None
-    type: str  # AUTOMATED | HUMAN
-    outcome: str  # ALLOW | REVIEW | BLOCK
+    type: str
+    outcome: str
     reason: str
     decided_by: str
     source: str
@@ -50,7 +50,7 @@ class ReviewResponse(BaseModel):
     request_id: str
     workspace_id: int | None
     analysis_id: int
-    status: str  # PENDING | APPROVED | REJECTED
+    status: str
     assigned_to: int | None = None
     reviewed_by: int | None = None
     resolution_notes: str | None = None

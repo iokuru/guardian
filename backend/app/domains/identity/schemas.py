@@ -45,4 +45,4 @@ class ApiKeyResponse(BaseModel):
     scopes: list[str]
     created_at: datetime
     revoked_at: datetime | None = None
-    key: str | None = None  # Only populated once upon creation
+    key: str | None = None

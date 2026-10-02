@@ -16,8 +16,8 @@ class Decision(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     request_id: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"), nullable=True, index=True, default=1)
-    type: Mapped[str] = mapped_column(String(20), nullable=False, default="AUTOMATED")  # AUTOMATED | HUMAN
-    outcome: Mapped[str] = mapped_column(String(20), nullable=False)  # ALLOW | REVIEW | BLOCK
+    type: Mapped[str] = mapped_column(String(20), nullable=False, default="AUTOMATED")
+    outcome: Mapped[str] = mapped_column(String(20), nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     decided_by: Mapped[str] = mapped_column(String(100), nullable=False, default="system")
     source: Mapped[str] = mapped_column(String(50), nullable=False, default="policy_engine")
@@ -31,7 +31,7 @@ class Review(Base):
     request_id: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"), nullable=True, index=True, default=1)
     analysis_id: Mapped[int] = mapped_column(ForeignKey("analyses.id"), nullable=False, index=True)
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING", index=True)  # PENDING | APPROVED | REJECTED
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING", index=True)
 
     assigned_to: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     reviewed_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)

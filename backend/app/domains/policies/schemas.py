@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field, ConfigDict
 
 class PolicyRule(BaseModel):
     category: str
-    condition: str = "MATCH"  # MATCH | THRESHOLD | COMBINATION
-    decision: str = "BLOCK"  # BLOCK | REVIEW | ALLOW
+    condition: str = "match"
+    decision: str = "block"
     reason: str
 
 
