@@ -41,13 +41,11 @@ export default function Login({ onLogin }: LoginProps) {
     setError("");
     setGitHubLoading(true);
     try {
-      // Authenticate with sandbox service account and tag session as github_analyst
       const tokenResponse = await login({ username: "analyst", password: "password123" });
       localStorage.setItem("guardian_token", tokenResponse.access_token);
       localStorage.setItem("guardian_auth_provider", "github");
       onLogin("github_analyst");
     } catch {
-      // Offline fallback: set mock token and proceed
       localStorage.setItem("guardian_token", "sandbox_github_token");
       localStorage.setItem("guardian_auth_provider", "github");
       onLogin("github_analyst");
@@ -65,24 +63,21 @@ export default function Login({ onLogin }: LoginProps) {
   return (
     <div className="login-canvas">
       <div className="login-card">
-        {/* Brand identity: Logo on left, Guardian on right */}
         <div className="login-brand-rail flex items-center gap-3">
           <GuardianLogo size={26} color="#ea4b71" />
           <div className="login-brand-meta">
             <span className="brand-title text-[18px] font-bold tracking-tight text-[#09090b]">Guardian</span>
-            <span className="brand-sub text-[12px] text-[#71717a]">Security control plane</span>
+            <span className="brand-sub text-[12px] text-[#71717a]">Action review and policy enforcement</span>
           </div>
         </div>
 
-        {/* Header copy */}
         <div className="login-header-group">
-          <h1 className="login-main-title">Sign in to workspace</h1>
+          <h1 className="login-main-title">Sign in</h1>
           <p className="login-sub-title">
-            Enforce runtime guardrails and immutable audit logs on AI agents.
+            Action review and policy enforcement for automated systems.
           </p>
         </div>
 
-        {/* GitHub OAuth Primary Option */}
         <div className="flex flex-col gap-3">
           <button
             type="button"
@@ -103,7 +98,6 @@ export default function Login({ onLogin }: LoginProps) {
           </div>
         </div>
 
-        {/* Sign in form */}
         <form className="login-form-body" onSubmit={handleSubmit}>
           {error && (
             <div className="login-alert-banner">
@@ -155,15 +149,14 @@ export default function Login({ onLogin }: LoginProps) {
             className="btn-login-submit"
             disabled={loading || gitHubLoading}
           >
-            <span>{loading ? "Authenticating..." : "Sign in to control plane"}</span>
+            <span>{loading ? "Authenticating..." : "Sign in"}</span>
             <ArrowRight size={13} />
           </button>
 
-          {/* Quick Demo Fill Helper */}
           <div className="demo-credentials-card">
             <div className="demo-cred-header">
               <ShieldCheck size={13} className="text-[#1b6334]" />
-              <span>Analyst sandbox credentials</span>
+              <span>Sandbox credentials</span>
             </div>
             <p className="demo-cred-sub">
               Default role: <code className="inline-code">analyst</code> &middot; Password: <code className="inline-code">password123</code>
@@ -177,12 +170,6 @@ export default function Login({ onLogin }: LoginProps) {
             </button>
           </div>
         </form>
-
-        <div className="login-card-footer">
-          <span>Target: <code>127.0.0.1:8000</code></span>
-          <span>&middot;</span>
-          <span>Fail-Closed Enclave</span>
-        </div>
       </div>
     </div>
   );
