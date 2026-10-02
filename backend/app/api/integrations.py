@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.models.auth_dependencies import get_current_user
@@ -16,8 +16,9 @@ router = APIRouter(prefix="/integrations", tags=["Integrations"])
 
 
 @router.get("/snippets", response_model=IntegrationSnippetResponse)
-def get_snippets_endpoint():
-    return get_integration_snippets()
+def get_snippets_endpoint(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    return get_integration_snippets(base_url=base_url)
 
 
 @router.get("/keys", response_model=list[ApiKeyResponse])

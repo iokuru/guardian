@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Key, Copy, Check, Trash2, Code2 } from "lucide-react";
+import { Plus, Key, Copy, Check, Trash2, Code2, Globe, Shield } from "lucide-react";
 import type { ApiKeyRecord } from "../types/guardian";
 import { getApiKeys, createApiKey, revokeApiKey, getIntegrationSnippets } from "../api/client";
 import { CodeBlock } from "../components/CodeBlock";
@@ -8,11 +8,13 @@ import { copyToClipboard } from "../utils/clipboard";
 export function Integrations() {
   const [keys, setKeys] = useState<ApiKeyRecord[]>([]);
   const [snippets, setSnippets] = useState<{ language: string; filename: string; code: string }[]>([]);
+  const [apiEndpoint, setApiEndpoint] = useState<string>("http://127.0.0.1:8000/analysis");
   const [activeLang, setActiveLang] = useState<string>("Python");
   const [isCreatingKey, setIsCreatingKey] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [copiedEndpoint, setCopiedEndpoint] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,9 +25,12 @@ export function Integrations() {
       if (keysRes.status === "fulfilled") {
         setKeys(keysRes.value);
       }
-      if (snipsRes.status === "fulfilled" && snipsRes.value.snippets) {
-        setSnippets(snipsRes.value.snippets);
-        if (snipsRes.value.snippets.length > 0) {
+      if (snipsRes.status === "fulfilled") {
+        if (snipsRes.value.api_endpoint) {
+          setApiEndpoint(snipsRes.value.api_endpoint);
+        }
+        if (snipsRes.value.snippets && snipsRes.value.snippets.length > 0) {
+          setSnippets(snipsRes.value.snippets);
           setActiveLang(snipsRes.value.snippets[0].language);
         }
       }
@@ -73,6 +78,14 @@ export function Integrations() {
     }
   }
 
+  async function copyEndpointText() {
+    const ok = await copyToClipboard(apiEndpoint);
+    if (ok) {
+      setCopiedEndpoint(true);
+      setTimeout(() => setCopiedEndpoint(false), 2000);
+    }
+  }
+
   const activeSnippet =
     snippets.find((s) => s.language.toLowerCase() === activeLang.toLowerCase()) || snippets[0];
 
@@ -81,9 +94,9 @@ export function Integrations() {
       {/* Header */}
       <div className="page-header-block flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="page-main-heading">Integrations & API</h1>
+          <h1 className="page-main-heading">Integrations</h1>
           <p className="page-sub-heading">
-            Connect Guardian guardrails into agent tool execution loops, middleware, and CI pipelines.
+            API credentials and client integration for automated systems and agent loops.
           </p>
         </div>
 
@@ -96,7 +109,7 @@ export function Integrations() {
           }}
         >
           <Plus size={14} />
-          <span>New API key</span>
+          <span>Create API key</span>
         </button>
       </div>
 
@@ -132,14 +145,17 @@ export function Integrations() {
         </div>
       )}
 
-      {/* Create Key Modal / Drawer */}
+      {/* Create Key Dialog */}
       {isCreatingKey && (
         <div className="p-4 rounded-xl border border-[#27272a] bg-[#121214] space-y-3">
-          <h3 className="text-sm font-semibold text-white">Create new API credential</h3>
-          <form onSubmit={handleCreateKey} className="flex flex-col sm:flex-row items-center gap-3">
+          <h3 className="text-sm font-semibold text-white">Create API key</h3>
+          <p className="text-xs text-[#71717a]">
+            Provide an identifier for the automated agent or service calling Guardian.
+          </p>
+          <form onSubmit={handleCreateKey} className="flex flex-col sm:flex-row items-center gap-3 pt-1">
             <input
               type="text"
-              placeholder="e.g. production-deploy-worker"
+              placeholder="e.g. customer-support-agent"
               value={newKeyName}
               onChange={(e) => setNewKeyName(e.target.value)}
               className="flex-1 w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-[#ea4b71]"
@@ -165,19 +181,62 @@ export function Integrations() {
         </div>
       )}
 
-      {/* API Keys Table */}
+      {/* 1. API Access Section */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="section-title">Active credentials</h2>
-          <span className="text-xs text-[#71717a]">{keys.length} registered</span>
+        <div className="flex items-center justify-between pb-2 border-b border-[#27272a]">
+          <h2 className="section-title flex items-center gap-2">
+            <Globe size={15} className="text-[#ea4b71]" />
+            <span>API access</span>
+          </h2>
+          <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            operational
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl border border-[#27272a] bg-[#121214] space-y-2">
+            <span className="text-xs font-medium text-[#71717a] uppercase tracking-wider block">API endpoint</span>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-[#18181b] border border-[#27272a] px-3 py-2 rounded text-xs font-mono text-zinc-200 truncate">
+                {apiEndpoint}
+              </code>
+              <button
+                type="button"
+                className="btn-secondary !h-8 !px-2.5"
+                onClick={copyEndpointText}
+                title="Copy endpoint"
+              >
+                {copiedEndpoint ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl border border-[#27272a] bg-[#121214] space-y-2">
+            <span className="text-xs font-medium text-[#71717a] uppercase tracking-wider block">Authentication</span>
+            <div className="bg-[#18181b] border border-[#27272a] px-3 py-2 rounded text-xs font-mono text-zinc-300">
+              Authorization: Bearer gdn_live_••••••••
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. API Keys Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#27272a]">
+          <h2 className="section-title flex items-center gap-2">
+            <Shield size={15} className="text-[#ea4b71]" />
+            <span>API keys</span>
+          </h2>
+          <span className="text-xs text-[#71717a]">{keys.length} keys</span>
         </div>
 
         <div className="dev-table-container">
           <table className="dev-table">
             <thead>
               <tr>
-                <th style={{ width: "200px" }}>Key name</th>
-                <th style={{ width: "160px" }}>Prefix</th>
+                <th style={{ width: "220px" }}>Key name</th>
+                <th style={{ width: "180px" }}>Key prefix</th>
                 <th>Scopes</th>
                 <th style={{ width: "140px" }}>Created</th>
                 <th style={{ width: "100px", textAlign: "right" }}>Status</th>
@@ -188,7 +247,7 @@ export function Integrations() {
               {keys.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-6 text-xs text-[#71717a]">
-                    No API keys registered yet.
+                    No API keys created yet. Click "Create API key" to generate one.
                   </td>
                 </tr>
               ) : (
@@ -200,7 +259,9 @@ export function Integrations() {
                         <strong className="text-xs text-[#09090b] dark:text-zinc-200">{k.name}</strong>
                       </td>
                       <td>
-                        <code className="mono-text text-xs text-[#71717a]">{k.prefix}...</code>
+                        <code className="mono-text text-xs text-[#71717a] font-mono">
+                          {k.prefix}••••••••
+                        </code>
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-1">
@@ -248,16 +309,16 @@ export function Integrations() {
         </div>
       </div>
 
-      {/* SDK Integration Tabs */}
-      <div className="space-y-4 pt-4 border-t border-[#27272a]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* 3. SDK Section */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#27272a]">
           <div>
             <h2 className="section-title flex items-center gap-2">
               <Code2 size={16} className="text-[#ea4b71]" />
-              <span>SDK integration snippets</span>
+              <span>SDK</span>
             </h2>
             <p className="text-xs text-[#71717a] mt-0.5">
-              Drop Guardian pre-flight checks directly before automated tool calls or shell executions.
+              Call Guardian pre-flight checks directly before automated tool calls or shell executions.
             </p>
           </div>
 
@@ -278,6 +339,13 @@ export function Integrations() {
             ))}
           </div>
         </div>
+
+        {activeLang.toLowerCase() === "python" && (
+          <div className="flex items-center gap-2 text-xs text-[#a1a1aa] bg-[#121214] border border-[#27272a] px-3 py-2 rounded-lg font-mono">
+            <span className="text-[#71717a]">Install:</span>
+            <span className="text-emerald-400">pip install guardian-sdk</span>
+          </div>
+        )}
 
         {activeSnippet ? (
           <CodeBlock

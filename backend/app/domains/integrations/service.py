@@ -1,81 +1,82 @@
 from app.domains.integrations.schemas import IntegrationSnippet, IntegrationSnippetResponse
 
 
-def get_integration_snippets(base_url: str = "http://localhost:8000") -> IntegrationSnippetResponse:
-    python_code = f'''import httpx
+def get_integration_snippets(base_url: str = "http://127.0.0.1:8000") -> IntegrationSnippetResponse:
+    python_code = f'''from guardian import Guardian
 
-GUARDIAN_API_URL = "{base_url}/api/v1/analysis"
-GUARDIAN_API_KEY = "gdn_live_YOUR_API_KEY"
+guardian = Guardian(
+    api_key="gdn_live_YOUR_API_KEY",
+    base_url="{base_url}",
+)
 
-def evaluate_agent_action(action: str, context: str) -> dict:
-    headers = {{
-        "Authorization": f"Bearer {{GUARDIAN_API_KEY}}",
-        "Content-Type": "application/json",
-    }}
-    payload = {{
-        "action": action,
-        "context": context,
-        "agent_id": "agent_auto_remediate_01"
-    }}
-    response = httpx.post(GUARDIAN_API_URL, json=payload, headers=headers)
-    result = response.json()
+result = guardian.analyze(
+    action="Delete all customer records",
+    context="Production database",
+    agent_id="customer-support-agent",
+)
 
-    # Decision is ALLOW, REVIEW, or BLOCK
-    decision = result["decision"]
-    if decision == "BLOCK":
-        raise PermissionError(f"Action blocked by Guardian policy: {{result['decision_reason']}}")
-    elif decision == "REVIEW":
-        print(f"Action placed in Guardian review queue (ID: {{result['review_id']}})")
-        return result
-    
-    return result
+if result.is_allowed:
+    perform_action()
+
+elif result.is_review_required:
+    review = guardian.wait_for_review(result.request_id)
+
+    if review.is_approved:
+        perform_action()
+    else:
+        abort("Action rejected by security reviewer")
+
+else:
+    abort(f"Action blocked by policy: {{result.decision_reason}}")
 '''
 
-    ts_code = f'''import axios from "axios";
-
-const GUARDIAN_API_URL = "{base_url}/api/v1/analysis";
+    ts_code = f'''const GUARDIAN_API_URL = "{base_url}/analysis";
 const GUARDIAN_API_KEY = "gdn_live_YOUR_API_KEY";
 
-export async function evaluateAgentAction(action: string, context: string) {{
-  const response = await axios.post(
-    GUARDIAN_API_URL,
-    {{
+export async function evaluateAction(action: string, context: string, agentId = "agent_01") {{
+  const response = await fetch(GUARDIAN_API_URL, {{
+    method: "POST",
+    headers: {{
+      "Authorization": `Bearer ${{GUARDIAN_API_KEY}}`,
+      "Content-Type": "application/json",
+    }},
+    body: JSON.stringify({{
       action,
       context,
-      agent_id: "agent_auto_remediate_01"
-    }},
-    {{
-      headers: {{
-        Authorization: `Bearer ${{GUARDIAN_API_KEY}}`,
-        "Content-Type": "application/json"
-      }}
-    }}
-  );
+      agent_id: agentId,
+    }}),
+  }});
 
-  const {{ decision, decision_reason, review_id }} = response.data;
-  if (decision === "BLOCK") {{
-    throw new Error(`Action blocked by Guardian: ${{decision_reason}}`);
+  const result = await response.json();
+
+  if (result.decision === "block") {{
+    throw new Error(`Action blocked by Guardian policy: ${{result.decision_reason}}`);
   }}
-  return response.data;
+
+  if (result.decision === "review") {{
+    console.log(`Action queued for review (ID: ${{result.review_id}}, Request: ${{result.request_id}})`);
+  }}
+
+  return result;
 }}
 '''
 
-    curl_code = f'''curl -X POST "{base_url}/api/v1/analysis" \\
+    curl_code = f'''curl -X POST "{base_url}/analysis" \\
   -H "Authorization: Bearer gdn_live_YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{{
-    "action": "GRANT admin TO krishna",
-    "context": "Production database cluster eu-west-1",
-    "agent_id": "agent_auto_remediate_01"
+    "action": "Delete all customer records",
+    "context": "Production database",
+    "agent_id": "customer-support-agent"
   }}'
 '''
 
     return IntegrationSnippetResponse(
-        api_endpoint=f"{base_url}/api/v1/analysis",
+        api_endpoint=f"{base_url}/analysis",
         api_key_sample="gdn_live_d84f93b16e45...",
         snippets=[
-            IntegrationSnippet(language="python", filename="guardian_client.py", code=python_code),
-            IntegrationSnippet(language="typescript", filename="guardianClient.ts", code=ts_code),
-            IntegrationSnippet(language="bash", filename="evaluate.sh", code=curl_code),
+            IntegrationSnippet(language="python", filename="agent_integration.py", code=python_code),
+            IntegrationSnippet(language="typescript", filename="agentIntegration.ts", code=ts_code),
+            IntegrationSnippet(language="curl", filename="evaluate.sh", code=curl_code),
         ],
     )
