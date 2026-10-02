@@ -9,7 +9,7 @@ import { getHealth } from "../api/client";
 import { CodeBlock } from "../components/CodeBlock";
 
 interface SystemViewsProps {
-  view: "engine" | "models" | "api";
+  view: "engine" | "models" | "api" | "status" | "users" | "access" | "integrations";
 }
 
 export function SystemViews({ view }: SystemViewsProps) {
@@ -34,7 +34,7 @@ export function SystemViews({ view }: SystemViewsProps) {
   }
 
   useEffect(() => {
-    if (view !== "engine") return;
+    if (view !== "engine" && view !== "status") return;
     let active = true;
 
     async function probe() {
@@ -60,14 +60,14 @@ export function SystemViews({ view }: SystemViewsProps) {
     };
   }, [view]);
 
-  if (view === "engine") {
+  if (view === "engine" || view === "status") {
     return (
       <div className="overview-editorial-wrap">
         <div className="page-header-block flex items-start justify-between">
           <div>
-            <h1 className="page-main-heading">Runtime engine</h1>
+            <h1 className="page-main-heading">{view === "status" ? "System status" : "Runtime engine"}</h1>
             <p className="page-sub-heading">
-              Operational diagnostics and live technical configuration of the active GUARDIAN instance.
+              Operational diagnostics and live technical configuration of the active Guardian instance.
             </p>
           </div>
           <button
@@ -92,7 +92,7 @@ export function SystemViews({ view }: SystemViewsProps) {
                 ) : (
                   <AlertCircle size={13} />
                 )}
-                <span>{healthStatus === "healthy" ? "Operational (HTTP 200)" : healthStatus.toUpperCase()}</span>
+                <span>{healthStatus === "healthy" ? "operational" : healthStatus.toLowerCase()}</span>
               </span>
             </div>
           </div>
@@ -215,7 +215,7 @@ export function SystemViews({ view }: SystemViewsProps) {
                   </td>
                   <td>
                     <span className="text-[#374139]">
-                      Critical boundary cutoff. Similarity scores ≥ 0.75 trigger an immediate policy BLOCK.
+                      Critical boundary cutoff. Similarity scores ≥ 0.75 trigger an immediate policy block.
                     </span>
                   </td>
                 </tr>
@@ -324,7 +324,7 @@ export function SystemViews({ view }: SystemViewsProps) {
                   </td>
                   <td>
                     <span className="decision-col-token block">
-                      BLOCK
+                      block
                     </span>
                   </td>
                   <td>
@@ -343,7 +343,7 @@ export function SystemViews({ view }: SystemViewsProps) {
                   </td>
                   <td>
                     <span className="decision-col-token review">
-                      REVIEW
+                      review
                     </span>
                   </td>
                   <td>
@@ -362,7 +362,7 @@ export function SystemViews({ view }: SystemViewsProps) {
                   </td>
                   <td>
                     <span className="decision-col-token allow">
-                      ALLOW
+                      allow
                     </span>
                   </td>
                   <td>
@@ -379,27 +379,115 @@ export function SystemViews({ view }: SystemViewsProps) {
     );
   }
 
-  // API Reference View
+  if (view === "users" || view === "access") {
+    return (
+      <div className="overview-editorial-wrap">
+        <div className="page-header-block">
+          <h1 className="page-main-heading">{view === "users" ? "Users & Teams" : "Access control"}</h1>
+          <p className="page-sub-heading">
+            Team members, role privileges, and automated service identities.
+          </p>
+        </div>
+
+        <div className="subsystem-catalog">
+          <h2 className="section-title">Active members & accounts</h2>
+          <div className="dev-table-container">
+            <table className="dev-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "200px" }}>Identity</th>
+                  <th style={{ width: "120px" }}>Type</th>
+                  <th style={{ width: "120px" }}>Role</th>
+                  <th>Privilege scope</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="dev-table-row">
+                  <td>
+                    <strong className="text-[#111813]">krishna</strong>
+                    <div className="text-xs text-[#71717a]">krishna@guardian.local</div>
+                  </td>
+                  <td>
+                    <span className="mono-text text-xs text-[#374139]">user</span>
+                  </td>
+                  <td>
+                    <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      admin
+                    </span>
+                  </td>
+                  <td>
+                    <span className="text-[#27272a] text-xs">
+                      Full workspace authority: review resolution, policy authoring, key management.
+                    </span>
+                  </td>
+                </tr>
+                <tr className="dev-table-row">
+                  <td>
+                    <strong className="text-[#111813]">agent_deploy_prod</strong>
+                    <div className="text-xs text-[#71717a]">Deploy Pipeline Agent</div>
+                  </td>
+                  <td>
+                    <span className="mono-text text-xs text-[#374139]">service</span>
+                  </td>
+                  <td>
+                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      agent
+                    </span>
+                  </td>
+                  <td>
+                    <span className="text-[#27272a] text-xs">
+                      Submit action analysis requests; receive policy evaluation verdicts.
+                    </span>
+                  </td>
+                </tr>
+                <tr className="dev-table-row">
+                  <td>
+                    <strong className="text-[#111813]">agent_db_worker</strong>
+                    <div className="text-xs text-[#71717a]">Database Migration Worker</div>
+                  </td>
+                  <td>
+                    <span className="mono-text text-xs text-[#374139]">service</span>
+                  </td>
+                  <td>
+                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      agent
+                    </span>
+                  </td>
+                  <td>
+                    <span className="text-[#27272a] text-xs">
+                      Submit DDL and database operations for pre-flight safety screening.
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // API Reference / Integrations View
   const analyzeCurl = `curl -X POST http://127.0.0.1:8000/analyze \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "action": "DROP TABLE users CASCADE",
+    "action": "drop table users cascade",
     "context": "Production database"
   }'`;
 
   const analysesListCurl = `curl -X GET "http://127.0.0.1:8000/analyses?limit=20&offset=0" \\
   -H "Authorization: Bearer YOUR_TOKEN"`;
 
-  const auditCurl = `curl -X GET "http://127.0.0.1:8000/audit-logs?decision=BLOCK&limit=50" \\
+  const auditCurl = `curl -X GET "http://127.0.0.1:8000/audit-logs?decision=block&limit=50" \\
   -H "Authorization: Bearer YOUR_TOKEN"`;
 
   return (
     <div className="overview-editorial-wrap">
       <div className="page-header-block">
-        <h1 className="page-main-heading">API reference</h1>
+        <h1 className="page-main-heading">{view === "integrations" ? "Integrations & API" : "API reference"}</h1>
         <p className="page-sub-heading">
-          Integrate GUARDIAN security guardrails into your agent loops, tool-call middleware, and CI pipelines.
+          Integrate Guardian policy guardrails into your agent loops, tool-call middleware, and CI pipelines.
         </p>
       </div>
 
@@ -414,10 +502,10 @@ export function SystemViews({ view }: SystemViewsProps) {
           </div>
           <p className="endpoint-doc-paragraph">
             Accepts an action command string and optional execution context. Returns full evaluation
-            verdict (<code className="inline-code">ALLOW</code>, <code className="inline-code">REVIEW</code>, <code className="inline-code">BLOCK</code>),
+            verdict (<code className="inline-code">allow</code>, <code className="inline-code">review</code>, <code className="inline-code">block</code>),
             calibrated risk score, detected categories, and itemized findings.
           </p>
-          <CodeBlock code={analyzeCurl} language="bash" label="CURL EXAMPLE" />
+          <CodeBlock code={analyzeCurl} language="bash" label="curl example" />
         </div>
 
         <div className="api-endpoint-item">
@@ -431,7 +519,7 @@ export function SystemViews({ view }: SystemViewsProps) {
           <p className="endpoint-doc-paragraph">
             Query historical evaluations by limit and offset. Returns comprehensive records including detected categories and granular findings.
           </p>
-          <CodeBlock code={analysesListCurl} language="bash" label="CURL EXAMPLE" />
+          <CodeBlock code={analysesListCurl} language="bash" label="curl example" />
         </div>
 
         <div className="api-endpoint-item">
@@ -443,10 +531,10 @@ export function SystemViews({ view }: SystemViewsProps) {
             <span className="endpoint-summary-text">Query sequential compliance audit trail</span>
           </div>
           <p className="endpoint-doc-paragraph">
-            Filter immutable audit log events by <code className="inline-code">decision</code> (<code className="inline-code">ALLOW</code> | <code className="inline-code">REVIEW</code> | <code className="inline-code">BLOCK</code>)
-            and <code className="inline-code">risk_level</code> (<code className="inline-code">CRITICAL</code> | <code className="inline-code">HIGH</code> | <code className="inline-code">MEDIUM</code> | <code className="inline-code">LOW</code>).
+            Filter immutable audit log events by <code className="inline-code">decision</code> (<code className="inline-code">allow</code> | <code className="inline-code">review</code> | <code className="inline-code">block</code>)
+            and <code className="inline-code">risk_level</code> (<code className="inline-code">critical</code> | <code className="inline-code">high</code> | <code className="inline-code">medium</code> | <code className="inline-code">low</code>).
           </p>
-          <CodeBlock code={auditCurl} language="bash" label="CURL EXAMPLE" />
+          <CodeBlock code={auditCurl} language="bash" label="curl example" />
         </div>
       </div>
     </div>

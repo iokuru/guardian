@@ -19,14 +19,19 @@ const WORKSPACES = [
 
 const ROUTE_TITLES: Record<RouteId, { section: string; title: string; sectionRoute: RouteId }> = {
   overview: { section: "Workspace", title: "Overview", sectionRoute: "overview" },
-  analyze: { section: "Workbench", title: "Analyze", sectionRoute: "analyze" },
-  decisions: { section: "Enforcement", title: "Decisions", sectionRoute: "decisions" },
-  audit: { section: "Compliance", title: "Audit logs", sectionRoute: "audit" },
-  policies: { section: "Specification", title: "Policy ruleset", sectionRoute: "policies" },
-  risks: { section: "Specification", title: "Threat taxonomy", sectionRoute: "risks" },
-  engine: { section: "System", title: "Runtime engine", sectionRoute: "engine" },
-  models: { section: "System", title: "Embedding model", sectionRoute: "models" },
-  api: { section: "System", title: "API reference", sectionRoute: "api" },
+  analyze: { section: "Workspace", title: "Analyze", sectionRoute: "analyze" },
+  reviews: { section: "Workspace", title: "Reviews", sectionRoute: "reviews" },
+  audit: { section: "Workspace", title: "Audit", sectionRoute: "audit" },
+  decisions: { section: "Workspace", title: "Reviews", sectionRoute: "reviews" },
+  policies: { section: "Configuration", title: "Policies", sectionRoute: "policies" },
+  risks: { section: "Configuration", title: "Risk categories", sectionRoute: "risks" },
+  integrations: { section: "Configuration", title: "Integrations", sectionRoute: "integrations" },
+  api: { section: "Configuration", title: "Integrations", sectionRoute: "integrations" },
+  users: { section: "Administration", title: "Users", sectionRoute: "users" },
+  access: { section: "Administration", title: "Access", sectionRoute: "access" },
+  status: { section: "Administration", title: "Status", sectionRoute: "status" },
+  engine: { section: "Administration", title: "Status", sectionRoute: "status" },
+  models: { section: "Administration", title: "Status", sectionRoute: "status" },
 };
 
 export function Topbar({
@@ -63,7 +68,6 @@ export function Topbar({
   return (
     <header className="dev-topbar">
       <div className="topbar-breadcrumbs flex items-center gap-1.5 text-[13px]">
-        {/* Interactive Workspace Dropdown */}
         <div className="relative" ref={wsRef}>
           <button
             type="button"
@@ -106,7 +110,6 @@ export function Topbar({
 
         <span className="crumb-sep">/</span>
 
-        {/* Section crumb */}
         <button
           type="button"
           className="topbar-crumb-btn"
@@ -118,7 +121,6 @@ export function Topbar({
 
         <span className="crumb-sep">/</span>
 
-        {/* Current leaf page */}
         <span className="crumb-leaf">
           {meta.title}
         </span>
@@ -152,4 +154,3 @@ export function Topbar({
     </header>
   );
 }
-

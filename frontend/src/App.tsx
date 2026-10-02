@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
-import type { RouteId, AnalysisRecord, AnalysisStats } from "./types/guardian";
-import { getAnalysisStats, getAnalyses } from "./api/client";
+import type { RouteId, AnalysisRecord, AnalysisStats, ReviewStats } from "./types/guardian";
+import { getAnalysisStats, getAnalyses, getReviewStats } from "./api/client";
 import { DEFAULT_MOCK_ANALYSES } from "./api/mockData";
 import Login from "./pages/Login";
 import { Overview } from "./pages/Overview";
 import { Analyze } from "./pages/Analyze";
-import { Decisions } from "./pages/Decisions";
+import { Reviews } from "./pages/Reviews";
 import { AuditLogs } from "./pages/AuditLogs";
 import { Governance } from "./pages/Governance";
 import { SystemViews } from "./pages/SystemViews";
@@ -16,7 +16,7 @@ import { InvestigationDrawer } from "./components/InvestigationDrawer";
 
 function App() {
   const [username, setUsername] = useState(
-    () => localStorage.getItem("guardian_username") || "analyst"
+    () => localStorage.getItem("guardian_username") || "krishna"
   );
   const [route, setRoute] = useState<RouteId>("overview");
   const [collapsed, setCollapsed] = useState(
@@ -24,6 +24,7 @@ function App() {
   );
 
   const [stats, setStats] = useState<AnalysisStats | null>(null);
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const [activeWorkspace, setActiveWorkspace] = useState<string>("Production");
   const [analyses, setAnalyses] = useState<AnalysisRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,9 +53,10 @@ function App() {
     setError(null);
 
     try {
-      const [statsRes, analysesRes] = await Promise.allSettled([
+      const [statsRes, analysesRes, revStatsRes] = await Promise.allSettled([
         getAnalysisStats(),
         getAnalyses(50, 0),
+        getReviewStats(),
       ]);
 
       if (statsRes.status === "fulfilled") {
@@ -63,9 +65,12 @@ function App() {
       if (analysesRes.status === "fulfilled" && analysesRes.value.length > 0) {
         setAnalyses(analysesRes.value);
       }
+      if (revStatsRes.status === "fulfilled") {
+        setReviewStats(revStatsRes.value);
+      }
 
       if (analysesRes.status === "rejected" && statsRes.status === "rejected") {
-        setError("Failed to load workspace data from GUARDIAN backend.");
+        setError("Failed to load workspace data from Guardian backend.");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error connecting to backend");
@@ -80,9 +85,10 @@ function App() {
 
     async function initialize() {
       try {
-        const [statsRes, analysesRes] = await Promise.allSettled([
+        const [statsRes, analysesRes, revStatsRes] = await Promise.allSettled([
           getAnalysisStats(),
           getAnalyses(50, 0),
+          getReviewStats(),
         ]);
 
         if (!isSubscribed) return;
@@ -93,8 +99,11 @@ function App() {
         if (analysesRes.status === "fulfilled" && analysesRes.value.length > 0) {
           setAnalyses(analysesRes.value);
         }
+        if (revStatsRes.status === "fulfilled") {
+          setReviewStats(revStatsRes.value);
+        }
         if (analysesRes.status === "rejected" && statsRes.status === "rejected") {
-          setError("Failed to load workspace data from GUARDIAN backend.");
+          setError("Failed to load workspace data from Guardian backend.");
         }
       } catch (err) {
         if (isSubscribed) {
@@ -138,13 +147,15 @@ function App() {
     localStorage.setItem("guardian_username", user);
     setUsername(user);
     setToken(localStorage.getItem("guardian_token"));
-    loadData();
   }
 
   function handleLogout() {
     localStorage.removeItem("guardian_token");
-    localStorage.removeItem("guardian_username");
+    localStorage.removeItem("guardian_auth_provider");
     setToken(null);
+    setAnalyses([]);
+    setStats(null);
+    setReviewStats(null);
   }
 
   if (!token) {
@@ -164,8 +175,7 @@ function App() {
         username={username}
         onLogout={handleLogout}
         onOpenCommand={() => setIsCommandOpen(true)}
-        activeWorkspace={activeWorkspace}
-        onSelectWorkspace={setActiveWorkspace}
+        pendingReviewsCount={reviewStats?.pending || 0}
       />
 
       {/* Main Operational Area */}
@@ -200,12 +210,16 @@ function App() {
             />
           )}
 
-          {route === "decisions" && (
-            <Decisions
-              analyses={effectiveAnalyses}
-              loading={loading}
-              onRefresh={loadData}
-              onSelectAnalysis={(id) => setSelectedAnalysisId(id)}
+          {(route === "reviews" || route === "decisions") && (
+            <Reviews
+              onInspectRequest={(reqId) => {
+                const found = effectiveAnalyses.find((a) => a.request_id === reqId);
+                if (found) {
+                  setSelectedAnalysisId(found.id);
+                } else if (effectiveAnalyses.length > 0) {
+                  setSelectedAnalysisId(effectiveAnalyses[0].id);
+                }
+              }}
             />
           )}
 
@@ -219,8 +233,8 @@ function App() {
             <Governance view={route} />
           )}
 
-          {(route === "engine" || route === "models" || route === "api") && (
-            <SystemViews view={route} />
+          {(route === "integrations" || route === "api" || route === "engine" || route === "models" || route === "users" || route === "access" || route === "status") && (
+            <SystemViews view={route === "integrations" ? "api" : route === "users" || route === "access" ? "status" : route} />
           )}
         </main>
       </div>

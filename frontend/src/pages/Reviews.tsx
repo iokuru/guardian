@@ -1,15 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   CheckCircle,
-  XCircle,
-  Clock,
-  ShieldAlert,
   ArrowRight,
-  Filter,
   Check,
   X,
-  Search,
-  ExternalLink,
 } from "lucide-react";
 import type { ReviewRecord, ReviewStats } from "../types/guardian";
 import { getReviews, getReviewStats, approveReview, rejectReview } from "../api/client";
@@ -165,7 +159,6 @@ export function Reviews({ onInspectRequest }: ReviewsProps) {
           {reviews.map((rev) => {
             const isPending = rev.status.toLowerCase() === "pending";
             const isApproved = rev.status.toLowerCase() === "approved";
-            const isRejected = rev.status.toLowerCase() === "rejected";
             const analysis = rev.analysis;
 
             return (
@@ -180,7 +173,7 @@ export function Reviews({ onInspectRequest }: ReviewsProps) {
                         {rev.request_id}
                       </span>
                       <span
-                        className={`text-[11px] font-semibold uppercase px-2 py-0.5 rounded ${
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded ${
                           isPending
                             ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                             : isApproved

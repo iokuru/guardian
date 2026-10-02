@@ -29,8 +29,6 @@ interface SidebarProps {
   username: string;
   onLogout: () => void;
   onOpenCommand?: () => void;
-  activeWorkspace?: string;
-  onSelectWorkspace?: (ws: string) => void;
   pendingReviewsCount?: number;
 }
 
@@ -42,8 +40,6 @@ export function Sidebar({
   username,
   onLogout,
   onOpenCommand,
-  activeWorkspace = "Production",
-  onSelectWorkspace,
   pendingReviewsCount = 0,
 }: SidebarProps) {
   const [isHovered, setIsHovered] = useState(false);
