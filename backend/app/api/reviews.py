@@ -11,6 +11,7 @@ from app.domains.decisions.schemas import (
 from app.domains.decisions.service import (
     list_reviews,
     get_review_by_id,
+    get_review_by_request_id,
     get_review_stats,
     approve_review,
     reject_review,
@@ -45,6 +46,22 @@ def get_review_stats_endpoint(
 ):
     workspace_id = current_user.get("workspace_id", 1) or 1
     return get_review_stats(db=db, workspace_id=workspace_id)
+
+
+@router.get("/by-request/{request_id}", response_model=ReviewResponse)
+def get_review_by_request_id_endpoint(
+    request_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    workspace_id = current_user.get("workspace_id", 1) or 1
+    review = get_review_by_request_id(db=db, request_id=request_id, workspace_id=workspace_id)
+    if not review:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Review item not found",
+        )
+    return review
 
 
 @router.get("/{review_id}", response_model=ReviewResponse)

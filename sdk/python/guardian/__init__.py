@@ -1,5 +1,5 @@
-from guardian.client import Guardian, GuardianError
-from guardian.models import AnalysisResult, Finding, ReviewStatus
+from .client import Guardian, GuardianError
+from .models import AnalysisResult, Finding, ReviewStatus
 
 __all__ = [
     "Guardian",

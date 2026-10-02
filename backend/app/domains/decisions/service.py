@@ -37,12 +37,15 @@ def get_review_by_id(db: Session, review_id: int, workspace_id: int = 1) -> Revi
     )
 
 
-def get_review_by_request_id(db: Session, request_id: str) -> Review | None:
-    return db.scalar(
+def get_review_by_request_id(db: Session, request_id: str, workspace_id: int | None = None) -> Review | None:
+    query = (
         select(Review)
         .options(joinedload(Review.analysis).joinedload(Analysis.findings))
         .where(Review.request_id == request_id)
     )
+    if workspace_id is not None:
+        query = query.where(Review.workspace_id == workspace_id)
+    return db.scalar(query)
 
 
 def get_review_stats(db: Session, workspace_id: int = 1) -> dict[str, int]:
