@@ -6,6 +6,12 @@ import type {
   AuditLogResponse,
   HealthResponse,
   UserResponse,
+  ReviewRecord,
+  ReviewStats,
+  PolicyRecord,
+  RequestTimeline,
+  AgentRecord,
+  ApiKeyRecord,
 } from "../types/guardian";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
@@ -95,4 +101,97 @@ export async function getCurrentUser(): Promise<UserResponse> {
 
 export async function listUsers(): Promise<UserResponse[]> {
   return apiRequest<UserResponse[]>("/auth/users");
+}
+
+export async function getReviews(status?: string): Promise<ReviewRecord[]> {
+  const query = status ? `?status=${status}` : "";
+  return apiRequest<ReviewRecord[]>(`/reviews${query}`);
+}
+
+export async function getReviewStats(): Promise<ReviewStats> {
+  return apiRequest<ReviewStats>("/reviews/stats");
+}
+
+export async function approveReview(
+  reviewId: number,
+  notes: string = "",
+  reviewerName: string = "Krishna",
+): Promise<ReviewRecord> {
+  return apiRequest<ReviewRecord>(`/reviews/${reviewId}/approve`, {
+    method: "POST",
+    body: JSON.stringify({ notes, reviewer_name: reviewerName }),
+  });
+}
+
+export async function rejectReview(
+  reviewId: number,
+  notes: string = "",
+  reviewerName: string = "Krishna",
+): Promise<ReviewRecord> {
+  return apiRequest<ReviewRecord>(`/reviews/${reviewId}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ notes, reviewer_name: reviewerName }),
+  });
+}
+
+export async function getPolicies(): Promise<PolicyRecord[]> {
+  return apiRequest<PolicyRecord[]>("/policies");
+}
+
+export async function getActivePolicy(environment: string = "Production"): Promise<PolicyRecord> {
+  return apiRequest<PolicyRecord>(`/policies/active?environment=${environment}`);
+}
+
+export async function createPolicy(policy: {
+  environment: string;
+  version: string;
+  name: string;
+  block_threshold?: number;
+  review_threshold?: number;
+  low_threshold?: number;
+  rules?: { category: string; decision: string; reason: string }[];
+}): Promise<PolicyRecord> {
+  return apiRequest<PolicyRecord>("/policies", {
+    method: "POST",
+    body: JSON.stringify(policy),
+  });
+}
+
+export async function activatePolicy(policyId: number): Promise<PolicyRecord> {
+  return apiRequest<PolicyRecord>(`/policies/${policyId}/activate`, {
+    method: "POST",
+  });
+}
+
+export async function getRequestTimeline(requestId: string): Promise<RequestTimeline> {
+  return apiRequest<RequestTimeline>(`/audit/requests/${requestId}`);
+}
+
+export async function getAgents(): Promise<AgentRecord[]> {
+  return apiRequest<AgentRecord[]>("/agents");
+}
+
+export async function getApiKeys(): Promise<ApiKeyRecord[]> {
+  return apiRequest<ApiKeyRecord[]>("/integrations/keys");
+}
+
+export async function createApiKey(name: string, scopes: string[] = ["action:evaluate"]): Promise<ApiKeyRecord> {
+  return apiRequest<ApiKeyRecord>("/integrations/keys", {
+    method: "POST",
+    body: JSON.stringify({ name, scopes }),
+  });
+}
+
+export async function revokeApiKey(keyId: number): Promise<void> {
+  return apiRequest<void>(`/integrations/keys/${keyId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getIntegrationSnippets(): Promise<{
+  api_endpoint: string;
+  api_key_sample: string;
+  snippets: { language: string; filename: string; code: string }[];
+}> {
+  return apiRequest("/integrations/snippets");
 }
