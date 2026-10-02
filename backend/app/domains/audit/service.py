@@ -31,13 +31,16 @@ def list_audit_events(
     )
 
 
-def get_request_timeline(db: Session, request_id: str) -> RequestTimelineResponse | None:
+def get_request_timeline(db: Session, request_id: str, workspace_id: int | None = None) -> RequestTimelineResponse | None:
     # 1. Fetch Analysis
-    analysis = db.scalar(
+    query = (
         select(Analysis)
         .options(joinedload(Analysis.findings))
         .where(Analysis.request_id == request_id)
     )
+    if workspace_id is not None:
+        query = query.where(Analysis.workspace_id == workspace_id)
+    analysis = db.scalar(query)
     if not analysis:
         return None
 

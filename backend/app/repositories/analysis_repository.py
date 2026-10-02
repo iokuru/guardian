@@ -18,14 +18,16 @@ from app.services.severity import get_risk_severity
 def get_analyses(
     db: Session,
     user_id: int,
+    workspace_id: int | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> list[Analysis]:
+    query = select(Analysis).where(Analysis.user_id == user_id)
+    if workspace_id is not None:
+        query = query.where(Analysis.workspace_id == workspace_id)
     return list(
         db.scalars(
-            select(Analysis)
-            .where(Analysis.user_id == user_id)
-            .order_by(Analysis.created_at.desc())
+            query.order_by(Analysis.created_at.desc())
             .offset(offset)
             .limit(limit)
         )
@@ -36,13 +38,15 @@ def get_analysis(
     db: Session,
     analysis_id: int,
     user_id: int,
+    workspace_id: int | None = None,
 ) -> Analysis | None:
-    return db.scalar(
-        select(Analysis).where(
-            Analysis.id == analysis_id,
-            Analysis.user_id == user_id,
-        )
+    query = select(Analysis).where(
+        Analysis.id == analysis_id,
+        Analysis.user_id == user_id,
     )
+    if workspace_id is not None:
+        query = query.where(Analysis.workspace_id == workspace_id)
+    return db.scalar(query)
 
 
 def create_analysis(

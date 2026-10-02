@@ -25,14 +25,16 @@ def get_analysis_statistics(
 def list_analyses(
     db: Session,
     user_id: int,
+    workspace_id: int | None = None,
     limit: int = 50,
     offset: int = 0,
 ):
     return get_analyses(
-        db,
-        user_id,
-        limit,
-        offset,
+        db=db,
+        user_id=user_id,
+        workspace_id=workspace_id,
+        limit=limit,
+        offset=offset,
     )
 
 
@@ -40,8 +42,14 @@ def get_analysis_by_id(
     db: Session,
     analysis_id: int,
     user_id: int,
+    workspace_id: int | None = None,
 ):
-    return get_analysis(db, analysis_id, user_id)
+    return get_analysis(
+        db=db,
+        analysis_id=analysis_id,
+        user_id=user_id,
+        workspace_id=workspace_id,
+    )
 
 
 def analyze(

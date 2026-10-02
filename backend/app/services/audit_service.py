@@ -40,14 +40,17 @@ def list_audit_logs(
     db: Session,
     user_id: int,
     is_admin: bool,
+    workspace_id: int | None = None,
     limit: int = 50,
     decision: str | None = None,
     risk_level: str | None = None,
-):return get_audit_logs(
-    db=db,
-    user_id=user_id,
-    is_admin=is_admin,
-    limit=limit,
-    decision=decision,
-    risk_level=risk_level,
-)
+):
+    return get_audit_logs(
+        db=db,
+        user_id=user_id,
+        is_admin=is_admin,
+        workspace_id=workspace_id,
+        limit=limit,
+        decision=decision,
+        risk_level=risk_level,
+    )

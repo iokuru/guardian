@@ -28,12 +28,14 @@ def get_audit_logs_endpoint(
     db=Depends(get_db),
 ):
     user_id = int(current_user["sub"])
+    workspace_id = current_user.get("workspace_id", 1) or 1
     is_admin = current_user.get("role") in ("ADMIN", "Admin", "Reviewer")
 
     return list_audit_logs(
         db=db,
         user_id=user_id,
         is_admin=is_admin,
+        workspace_id=workspace_id,
         limit=limit,
         decision=decision,
         risk_level=risk_level,
@@ -53,7 +55,8 @@ def get_request_timeline_endpoint(
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    timeline = get_request_timeline(db=db, request_id=request_id)
+    workspace_id = current_user.get("workspace_id", 1) or 1
+    timeline = get_request_timeline(db=db, request_id=request_id, workspace_id=workspace_id)
     if not timeline:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

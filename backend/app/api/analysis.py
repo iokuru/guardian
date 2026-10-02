@@ -28,8 +28,9 @@ def analyze_endpoint(
     db: Session = Depends(get_db),
 ):
     user_id = int(current_user["sub"])
+    workspace_id = current_user.get("workspace_id", 1) or 1
 
-    if request.agent_id or request.request_id:
+    if request.agent_id or request.request_id or workspace_id != 1:
         return analyze(
             request.action,
             request.context,
@@ -37,6 +38,7 @@ def analyze_endpoint(
             user_id,
             agent_id=request.agent_id,
             request_id=request.request_id,
+            workspace_id=workspace_id,
         )
 
     return analyze(
@@ -56,10 +58,12 @@ def list_analyses_endpoint(
     db: Session = Depends(get_db),
 ):
     user_id = int(current_user["sub"])
+    workspace_id = current_user.get("workspace_id", 1) or 1
 
     return list_analyses(
         db=db,
         user_id=user_id,
+        workspace_id=workspace_id,
         limit=limit,
         offset=offset,
     )
@@ -87,11 +91,13 @@ def get_analysis_endpoint(
     db: Session = Depends(get_db),
 ):
     user_id = int(current_user["sub"])
+    workspace_id = current_user.get("workspace_id", 1) or 1
 
     record = get_analysis_by_id(
-        db,
-        analysis_id,
-        user_id,
+        db=db,
+        analysis_id=analysis_id,
+        user_id=user_id,
+        workspace_id=workspace_id,
     )
 
     if record is None:

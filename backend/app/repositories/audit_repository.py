@@ -8,11 +8,15 @@ def get_audit_logs(
     db: Session,
     user_id: int,
     is_admin: bool,
+    workspace_id: int | None = None,
     limit: int = 50,
     decision: str | None = None,
     risk_level: str | None = None,
 ) -> list[AuditLog]:
     query = select(AuditLog)
+
+    if workspace_id is not None:
+        query = query.where(AuditLog.workspace_id == workspace_id)
 
     if not is_admin:
         query = query.where(AuditLog.user_id == user_id)

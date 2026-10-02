@@ -31,6 +31,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
 def create_access_token(
     user_id: int,
     role: str,
+    workspace_id: int = 1,
 ) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
@@ -39,6 +40,7 @@ def create_access_token(
     payload = {
         "sub": str(user_id),
         "role": role,
+        "workspace_id": workspace_id,
         "exp": expire,
     }
 
