@@ -8,7 +8,7 @@ describe("Sidebar Navigation Component", () => {
     onNavigate: vi.fn(),
     collapsed: false,
     onToggleCollapse: vi.fn(),
-    username: "analyst",
+    username: "krishna",
     onLogout: vi.fn(),
     onOpenCommand: vi.fn(),
     activeWorkspace: "Production",
@@ -20,8 +20,8 @@ describe("Sidebar Navigation Component", () => {
     expect(screen.getByText("Guardian")).toBeInTheDocument();
     expect(screen.getByText("Overview")).toBeInTheDocument();
     expect(screen.getByText("Analyze")).toBeInTheDocument();
-    expect(screen.getByText("Decisions")).toBeInTheDocument();
-    expect(screen.getByText("Audit logs")).toBeInTheDocument();
+    expect(screen.getByText("Reviews")).toBeInTheDocument();
+    expect(screen.getByText("Audit")).toBeInTheDocument();
   });
 
   it("calls onNavigate when clicking a route item", () => {
@@ -32,18 +32,18 @@ describe("Sidebar Navigation Component", () => {
     expect(onNavigate).toHaveBeenCalledWith("analyze");
   });
 
-  it("navigates to secondary system routes when clicked", () => {
+  it("navigates to configuration and admin routes when clicked", () => {
     const onNavigate = vi.fn();
     render(<Sidebar {...defaultProps} onNavigate={onNavigate} />);
 
-    fireEvent.click(screen.getByText("Policy ruleset"));
+    fireEvent.click(screen.getByText("Policies"));
     expect(onNavigate).toHaveBeenCalledWith("policies");
 
-    fireEvent.click(screen.getByText("Runtime engine"));
-    expect(onNavigate).toHaveBeenCalledWith("engine");
-
-    fireEvent.click(screen.getByText("Threat taxonomy"));
+    fireEvent.click(screen.getByText("Risk categories"));
     expect(onNavigate).toHaveBeenCalledWith("risks");
+
+    fireEvent.click(screen.getByText("Integrations"));
+    expect(onNavigate).toHaveBeenCalledWith("integrations");
   });
 
   it("renders dynamic collapse button with 'Collapse sidebar' when expanded", () => {
@@ -75,15 +75,6 @@ describe("Sidebar Navigation Component", () => {
     const searchBtn = screen.getByRole("button", { name: /search\.\.\./i });
     fireEvent.click(searchBtn);
     expect(onOpenCommand).toHaveBeenCalledTimes(1);
-  });
-
-  it("calls onSelectWorkspace when a workspace item is clicked", () => {
-    const onSelectWorkspace = vi.fn();
-    render(<Sidebar {...defaultProps} onSelectWorkspace={onSelectWorkspace} />);
-
-    const stagingBtn = screen.getByRole("button", { name: "Staging" });
-    fireEvent.click(stagingBtn);
-    expect(onSelectWorkspace).toHaveBeenCalledWith("Staging");
   });
 
   it("opens user menu popover and handles sign out and menu actions", () => {

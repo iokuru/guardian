@@ -2,17 +2,19 @@ import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   Play,
-  ShieldCheck,
+  CheckSquare,
   ListFilter,
   Shield,
-  Cpu,
   Layers,
+  Plug,
+  Users,
+  KeyRound,
+  Activity,
   Search,
   Plus,
   MoreHorizontal,
   LogOut,
   ExternalLink,
-  Check,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
@@ -29,13 +31,8 @@ interface SidebarProps {
   onOpenCommand?: () => void;
   activeWorkspace?: string;
   onSelectWorkspace?: (ws: string) => void;
+  pendingReviewsCount?: number;
 }
-
-const WORKSPACES = [
-  { id: "Production", label: "Production" },
-  { id: "Development", label: "Development" },
-  { id: "Staging", label: "Staging" },
-];
 
 export function Sidebar({
   currentRoute,
@@ -47,6 +44,7 @@ export function Sidebar({
   onOpenCommand,
   activeWorkspace = "Production",
   onSelectWorkspace,
+  pendingReviewsCount = 0,
 }: SidebarProps) {
   const [isHovered, setIsHovered] = useState(false);
   const ignoreHoverRef = useRef(false);
@@ -88,7 +86,7 @@ export function Sidebar({
   }
 
   const isExpanded = !collapsed || isHovered;
-  const initials = (username || "AN").slice(0, 2).toUpperCase();
+  const initials = (username || "KR").slice(0, 2).toUpperCase();
 
   return (
     <aside
@@ -110,7 +108,7 @@ export function Sidebar({
               onNavigate("overview");
             }
           }}
-          title="Guardian Security Control Plane"
+          title="Guardian"
         >
           <GuardianLogo size={20} color="#ea4b71" />
           {isExpanded && (
@@ -123,7 +121,7 @@ export function Sidebar({
             type="button"
             className="n8n-sidebar-add-btn"
             onClick={() => onNavigate("analyze")}
-            title="Evaluate new action (Analyze)"
+            title="Evaluate new action"
           >
             <Plus size={13} />
           </button>
@@ -136,7 +134,7 @@ export function Sidebar({
             type="button"
             className="sidebar-search-trigger"
             onClick={onOpenCommand}
-            title="Open command palette (Ctrl+K)"
+            title="Search or command (Ctrl+K)"
           >
             <Search size={13} className="sidebar-search-icon" />
             <span className="sidebar-search-placeholder">Search...</span>
@@ -155,10 +153,9 @@ export function Sidebar({
       </div>
 
       <div className="n8n-sidebar-body">
+        {/* WORKSPACE */}
         <div className="n8n-nav-section">
-          {isExpanded && (
-            <div className="n8n-section-label">OPERATE</div>
-          )}
+          {isExpanded && <div className="n8n-section-label">WORKSPACE</div>}
 
           <div className="n8n-nav-group">
             <button
@@ -188,13 +185,22 @@ export function Sidebar({
             <button
               type="button"
               className={`n8n-nav-item ${
-                currentRoute === "decisions" ? "is-active" : ""
+                currentRoute === "reviews" || currentRoute === "decisions" ? "is-active" : ""
               }`}
-              onClick={() => onNavigate("decisions")}
-              title={!isExpanded ? "Decisions" : undefined}
+              onClick={() => onNavigate("reviews")}
+              title={!isExpanded ? "Reviews" : undefined}
             >
-              <ShieldCheck size={15} className="n8n-nav-icon" />
-              {isExpanded && <span className="n8n-nav-label">Decisions</span>}
+              <CheckSquare size={15} className="n8n-nav-icon" />
+              {isExpanded && (
+                <div className="flex items-center justify-between flex-1">
+                  <span className="n8n-nav-label">Reviews</span>
+                  {pendingReviewsCount > 0 && (
+                    <span className="ml-auto text-[10px] font-semibold bg-[#ea4b71]/20 text-[#ea4b71] px-1.5 py-0.5 rounded-full">
+                      {pendingReviewsCount}
+                    </span>
+                  )}
+                </div>
+              )}
             </button>
 
             <button
@@ -203,58 +209,17 @@ export function Sidebar({
                 currentRoute === "audit" ? "is-active" : ""
               }`}
               onClick={() => onNavigate("audit")}
-              title={!isExpanded ? "Audit logs" : undefined}
+              title={!isExpanded ? "Audit" : undefined}
             >
               <ListFilter size={15} className="n8n-nav-icon" />
-              {isExpanded && <span className="n8n-nav-label">Audit logs</span>}
+              {isExpanded && <span className="n8n-nav-label">Audit</span>}
             </button>
           </div>
         </div>
 
+        {/* CONFIGURATION */}
         <div className="n8n-nav-section">
-          {isExpanded ? (
-            <>
-              <div className="n8n-section-label">WORKSPACES</div>
-              <div className="n8n-workspace-list">
-                {WORKSPACES.map((ws) => {
-                  const isActive = activeWorkspace === ws.id;
-                  return (
-                    <button
-                      key={ws.id}
-                      type="button"
-                      className={`n8n-workspace-item ${
-                        isActive ? "is-active" : ""
-                      }`}
-                      onClick={() => onSelectWorkspace && onSelectWorkspace(ws.id)}
-                      title={`Workspace: ${ws.label}`}
-                    >
-                      <span className="n8n-ws-label">{ws.label}</span>
-                      {isActive && (
-                        <Check size={12} className="text-[#09090b] shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <div className="flex justify-center py-2">
-              <button
-                type="button"
-                className="n8n-workspace-collapsed-indicator"
-                onClick={handleToggle}
-                title={`Workspace: ${activeWorkspace} (click to expand)`}
-              >
-                <Layers size={14} className="text-[#71717a]" />
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="n8n-nav-section mt-auto">
-          {isExpanded && (
-            <div className="n8n-section-label">SYSTEM</div>
-          )}
+          {isExpanded && <div className="n8n-section-label">CONFIGURATION</div>}
 
           <div className="n8n-nav-group">
             <button
@@ -263,26 +228,10 @@ export function Sidebar({
                 currentRoute === "policies" ? "is-active" : ""
               }`}
               onClick={() => onNavigate("policies")}
-              title={!isExpanded ? "Policy ruleset" : undefined}
+              title={!isExpanded ? "Policies" : undefined}
             >
               <Shield size={15} className="n8n-nav-icon" />
-              {isExpanded && (
-                <span className="n8n-nav-label">Policy ruleset</span>
-              )}
-            </button>
-
-            <button
-              type="button"
-              className={`n8n-nav-item ${
-                currentRoute === "engine" ? "is-active" : ""
-              }`}
-              onClick={() => onNavigate("engine")}
-              title={!isExpanded ? "Runtime engine" : undefined}
-            >
-              <Cpu size={15} className="n8n-nav-icon" />
-              {isExpanded && (
-                <span className="n8n-nav-label">Runtime engine</span>
-              )}
+              {isExpanded && <span className="n8n-nav-label">Policies</span>}
             </button>
 
             <button
@@ -291,12 +240,65 @@ export function Sidebar({
                 currentRoute === "risks" ? "is-active" : ""
               }`}
               onClick={() => onNavigate("risks")}
-              title={!isExpanded ? "Threat taxonomy" : undefined}
+              title={!isExpanded ? "Risk categories" : undefined}
             >
               <Layers size={15} className="n8n-nav-icon" />
-              {isExpanded && (
-                <span className="n8n-nav-label">Threat taxonomy</span>
-              )}
+              {isExpanded && <span className="n8n-nav-label">Risk categories</span>}
+            </button>
+
+            <button
+              type="button"
+              className={`n8n-nav-item ${
+                currentRoute === "integrations" || currentRoute === "api" ? "is-active" : ""
+              }`}
+              onClick={() => onNavigate("integrations")}
+              title={!isExpanded ? "Integrations" : undefined}
+            >
+              <Plug size={15} className="n8n-nav-icon" />
+              {isExpanded && <span className="n8n-nav-label">Integrations</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* ADMINISTRATION */}
+        <div className="n8n-nav-section mt-auto">
+          {isExpanded && <div className="n8n-section-label">ADMINISTRATION</div>}
+
+          <div className="n8n-nav-group">
+            <button
+              type="button"
+              className={`n8n-nav-item ${
+                currentRoute === "users" ? "is-active" : ""
+              }`}
+              onClick={() => onNavigate("users")}
+              title={!isExpanded ? "Users" : undefined}
+            >
+              <Users size={15} className="n8n-nav-icon" />
+              {isExpanded && <span className="n8n-nav-label">Users</span>}
+            </button>
+
+            <button
+              type="button"
+              className={`n8n-nav-item ${
+                currentRoute === "access" ? "is-active" : ""
+              }`}
+              onClick={() => onNavigate("access")}
+              title={!isExpanded ? "Access" : undefined}
+            >
+              <KeyRound size={15} className="n8n-nav-icon" />
+              {isExpanded && <span className="n8n-nav-label">Access</span>}
+            </button>
+
+            <button
+              type="button"
+              className={`n8n-nav-item ${
+                currentRoute === "status" || currentRoute === "engine" ? "is-active" : ""
+              }`}
+              onClick={() => onNavigate("status")}
+              title={!isExpanded ? "Status" : undefined}
+            >
+              <Activity size={15} className="n8n-nav-icon" />
+              {isExpanded && <span className="n8n-nav-label">Status</span>}
             </button>
           </div>
         </div>
@@ -323,7 +325,7 @@ export function Sidebar({
         <div className="n8n-user-footer-content">
           <div
             className="n8n-user-avatar"
-            title={username || "analyst"}
+            title={username || "Krishna"}
             onClick={!isExpanded ? () => setUserMenuOpen((prev) => !prev) : undefined}
             style={{ cursor: !isExpanded ? "pointer" : "default" }}
           >
@@ -331,10 +333,10 @@ export function Sidebar({
           </div>
           {isExpanded && (
             <div className="n8n-user-info">
-              <span className="n8n-user-name" title={username || "analyst"}>
-                {username || "analyst"}
+              <span className="n8n-user-name" title={username || "Krishna"}>
+                {username || "Krishna"}
               </span>
-              <span className="n8n-user-role">ANALYST</span>
+              <span className="n8n-user-role">Security Lead</span>
             </div>
           )}
           {isExpanded && (
@@ -358,9 +360,9 @@ export function Sidebar({
           <div className="n8n-user-menu-popover">
             <div className="n8n-user-menu-header">
               <div className="text-[12px] text-[#09090b] leading-tight">
-                Signed in as <strong className="font-semibold text-[#09090b]">{username || "analyst"}</strong>
+                Signed in as <strong className="font-semibold text-[#09090b]">{username || "Krishna"}</strong>
               </div>
-              <div className="text-[11px] text-[#71717a] mt-0.5">Role: ANALYST</div>
+              <div className="text-[11px] text-[#71717a] mt-0.5">Role: Security Lead</div>
             </div>
             <div className="n8n-user-menu-divider" />
             {onOpenCommand && (
@@ -381,11 +383,11 @@ export function Sidebar({
               className="n8n-user-menu-item"
               onClick={() => {
                 setUserMenuOpen(false);
-                onNavigate("api");
+                onNavigate("integrations");
               }}
             >
               <ExternalLink size={13} className="text-[#71717a] shrink-0" />
-              <span>API documentation</span>
+              <span>Integrations & API</span>
             </button>
             <button
               type="button"
