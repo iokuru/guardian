@@ -73,6 +73,7 @@ export function AuditLogs({ onSelectAnalysis }: AuditLogsProps) {
     return (
       String(log.id).includes(q) ||
       String(log.analysis_id).includes(q) ||
+      (log.request_id || "").toLowerCase().includes(q) ||
       (log.action || "").toLowerCase().includes(q)
     );
   });

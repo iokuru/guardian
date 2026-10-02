@@ -41,7 +41,7 @@ function App() {
   );
 
   const [token, setToken] = useState<string | null>(
-    () => localStorage.getItem("guardian_token") || "sandbox_analyst_token"
+    () => localStorage.getItem("guardian_token")
   );
 
   useEffect(() => {

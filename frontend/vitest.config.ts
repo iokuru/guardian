@@ -10,5 +10,6 @@ export default defineConfig({
     setupFiles: './src/test/setupTests.ts',
     css: false,
     isolate: false,
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
 })
