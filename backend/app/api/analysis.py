@@ -20,12 +20,24 @@ router = APIRouter()
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
+@router.post("/analysis", response_model=AnalysisResponse)
+@router.post("/v1/analysis", response_model=AnalysisResponse)
 def analyze_endpoint(
     request: AnalysisRequest,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     user_id = int(current_user["sub"])
+
+    if request.agent_id or request.request_id:
+        return analyze(
+            request.action,
+            request.context,
+            db,
+            user_id,
+            agent_id=request.agent_id,
+            request_id=request.request_id,
+        )
 
     return analyze(
         request.action,
@@ -36,6 +48,7 @@ def analyze_endpoint(
 
 
 @router.get("/analyses", response_model=list[AnalysisRecord])
+@router.get("/v1/analyses", response_model=list[AnalysisRecord])
 def list_analyses_endpoint(
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -53,6 +66,7 @@ def list_analyses_endpoint(
 
 
 @router.get("/analyses/stats", response_model=AnalysisStats)
+@router.get("/v1/analyses/stats", response_model=AnalysisStats)
 def get_analysis_stats_endpoint(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -66,6 +80,7 @@ def get_analysis_stats_endpoint(
 
 
 @router.get("/analyses/{analysis_id}", response_model=AnalysisRecord)
+@router.get("/v1/analyses/{analysis_id}", response_model=AnalysisRecord)
 def get_analysis_endpoint(
     analysis_id: int,
     current_user: dict = Depends(get_current_user),
